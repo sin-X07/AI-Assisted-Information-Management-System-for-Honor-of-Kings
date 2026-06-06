@@ -2,7 +2,6 @@ package model;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Team {
@@ -74,26 +73,6 @@ public class Team {
         this.description = description;
         this.createTime = createTime;
         this.status = status;
-    }
-
-    public static List<Team> createDefaultTeams() {
-        List<Team> teams = new ArrayList<>();
-        teams.add(new Team("T001", "重庆狼队", "Wolves", "重庆",
-                "林", "Fly", Arrays.asList("Fly", "小胖", "向鱼", "妖刀", "一笙"),
-                Arrays.asList("吕布", "赵云", "王昭君", "孙尚香", "蔡文姬"),
-                Arrays.asList("KPL知名战队", "多次获得职业赛事冠军"), 0.72, 120,
-                "KPL 知名强队，团队运营和团战能力突出。", LocalDateTime.now(), "正常"));
-        teams.add(new Team("T002", "成都AG超玩会", "AG", "成都",
-                "奶茶", "一诺", Arrays.asList("一诺", "长生", "轩染", "钟意", "Cat"),
-                Arrays.asList("孙尚香", "马可波罗", "小乔", "亚瑟", "蔡文姬"),
-                Arrays.asList("KPL人气战队", "职业赛事冠军队伍"), 0.68, 115,
-                "KPL 高人气战队，选手个人能力和话题度较高。", LocalDateTime.now(), "正常"));
-        teams.add(new Team("T003", "武汉eStarPro", "eStarPro", "武汉",
-                "SK", "花海", Arrays.asList("花海", "清融", "坦然", "易峥", "子阳"),
-                Arrays.asList("韩信", "貂蝉", "吕布", "后羿", "蔡文姬"),
-                Arrays.asList("KPL知名战队", "多冠战队代表"), 0.74, 130,
-                "KPL 冠军战队代表，体系成熟且执行力强。", LocalDateTime.now(), "正常"));
-        return teams;
     }
 
     public String getTeamId() {
