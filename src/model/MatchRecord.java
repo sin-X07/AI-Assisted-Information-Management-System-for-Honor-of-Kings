@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MatchOverview {
+public class MatchRecord {
     private String matchId;
     private LocalDateTime matchTime;
     private String matchMode;
@@ -12,11 +12,11 @@ public class MatchOverview {
     private int durationSeconds;
     private List<MatchParticipant> participants;
 
-    public MatchOverview() {
+    public MatchRecord() {
         this.participants = new ArrayList<>();
     }
 
-    public MatchOverview(String matchId, LocalDateTime matchTime, String matchMode, String result) {
+    public MatchRecord(String matchId, LocalDateTime matchTime, String matchMode, String result) {
         this.matchId = matchId;
         this.matchTime = matchTime;
         this.matchMode = matchMode;
@@ -24,7 +24,7 @@ public class MatchOverview {
         this.participants = new ArrayList<>();
     }
 
-    public MatchOverview(String matchId, LocalDateTime matchTime, String matchMode, String result,
+    public MatchRecord(String matchId, LocalDateTime matchTime, String matchMode, String result,
                          int durationSeconds, List<MatchParticipant> participants) {
         this.matchId = matchId;
         this.matchTime = matchTime;

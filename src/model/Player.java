@@ -16,7 +16,7 @@ public class Player extends Person {
     private int creditScore;
     private String aiRecommendationPreference;
     private String remark;
-    private List<MatchOverview> matchOverviews;
+    private List<MatchRecord> matchOverviews;
 
     public Player() {
         this.matchOverviews = new ArrayList<>();
@@ -40,7 +40,7 @@ public class Player extends Person {
                   String email, String role, LocalDateTime createTime, String status,
                   String gameId, String serverArea, String rank, int level, String mainPosition,
                   String favoriteHero, double winRate, int totalMatches, int creditScore,
-                  String aiRecommendationPreference, String remark, List<MatchOverview> matchOverviews) {
+                  String aiRecommendationPreference, String remark, List<MatchRecord> matchOverviews) {
         super(id, username, password, nickname, phone, email, role, createTime, status);
         this.gameId = gameId;
         this.serverArea = serverArea;
@@ -144,11 +144,11 @@ public class Player extends Person {
         this.remark = remark;
     }
 
-    public List<MatchOverview> getMatchOverviews() {
+    public List<MatchRecord> getMatchOverviews() {
         return matchOverviews;
     }
 
-    public void setMatchOverviews(List<MatchOverview> matchOverviews) {
+    public void setMatchOverviews(List<MatchRecord> matchOverviews) {
         this.matchOverviews = matchOverviews == null ? new ArrayList<>() : matchOverviews;
     }
 }
