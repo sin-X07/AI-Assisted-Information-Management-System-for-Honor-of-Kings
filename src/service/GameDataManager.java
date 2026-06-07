@@ -1,4 +1,4 @@
-package service;
+﻿package service;
 
 import model.Equipment;
 import model.Hero;
@@ -221,9 +221,84 @@ public class GameDataManager implements Searchable {
 
     @Override
     public Player findPlainPlayerById(String id) {
+        if (id == null) {
+            return null;
+        }
+        for (Team team : teams) {
+            for (String memberName : team.getMemberNames()) {
+                if (id.equals(memberName)) {
+                    Player player = new Player();
+                    player.setId(id);
+                    player.setNickname(memberName);
+                    return player;
+                }
+            }
+        }
+        return null;
     }
 
     @Override
     public void displayPlayerDetails(String id) {
+        if (id == null) {
+            System.out.println("玩家ID不能为空。");
+            return;
+        }
+
+        Player player = findPlainPlayerById(id);
+        if (player == null) {
+            System.out.println("未找到ID为 " + id + " 的玩家。");
+            return;
+        }
+
+        Team playerTeam = null;
+        for (Team team : teams) {
+            if (team.getMemberNames().contains(id)) {
+                playerTeam = team;
+                break;
+            }
+        }
+
+        System.out.println("===== 玩家详细信息 =====");
+        System.out.println("玩家ID: " + player.getId());
+        System.out.println("昵称: " + player.getNickname());
+
+        if (playerTeam != null) {
+            System.out.println("所属战队: " + playerTeam.getTeamName()
+                    + " (" + playerTeam.getShortName() + ")");
+            System.out.println("战队区域: " + playerTeam.getRegion());
+            System.out.println("战队胜率: "
+                    + String.format("%.1f%%", playerTeam.getWinRate() * 100));
+            System.out.println("教练: " + playerTeam.getCoachName());
+            System.out.println("队长: " + playerTeam.getCaptainName());
+
+            System.out.println("\n----- 战队常用英雄 -----");
+            for (String heroName : playerTeam.getMainHeroes()) {
+                Hero hero = findHeroByName(heroName);
+                if (hero != null) {
+                    System.out.println("  " + hero.getHeroName()
+                            + " [" + hero.getTitle() + "]");
+                    System.out.println("    定位: " + hero.getPosition()
+                            + " | 类型: " + hero.getHeroType()
+                            + " | 难度: " + hero.getDifficulty());
+
+                    if (!hero.getRecommendedEquipmentIds().isEmpty()) {
+                        System.out.println("    推荐装备:");
+                        for (String eqId : hero.getRecommendedEquipmentIds()) {
+                            Equipment eq = findEquipmentById(eqId);
+                            if (eq != null) {
+                                System.out.println("      " + eq.getEquipmentName()
+                                        + " (" + eq.getEquipmentType()
+                                        + ", " + eq.getPrice() + "金币)");
+                            }
+                        }
+                    }
+                }
+            }
+
+            System.out.println("\n战队荣誉: "
+                    + String.join(", ", playerTeam.getHonors()));
+        }
+
+        System.out.println("========================");
     }
 }
