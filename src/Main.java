@@ -1,4 +1,4 @@
-﻿import model.Equipment;
+import model.Equipment;
 import model.Hero;
 import model.Person;
 import model.Team;

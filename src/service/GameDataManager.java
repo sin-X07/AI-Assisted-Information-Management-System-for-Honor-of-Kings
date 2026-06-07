@@ -1,7 +1,8 @@
-﻿package service;
+package service;
 
 import model.Equipment;
 import model.Hero;
+import model.MatchRecord;
 import model.Player;
 import model.Team;
 import util.DataInitializer;
@@ -226,12 +227,17 @@ public class GameDataManager implements Searchable {
         if (id == null) {
             return null;
         }
+        Player realPlayer = findRealPlayerById(id);
+        if (realPlayer != null) {
+            return realPlayer;
+        }
         for (Team team : teams) {
             for (String memberName : team.getMemberNames()) {
                 if (id.equals(memberName)) {
                     Player player = new Player();
                     player.setId(id);
                     player.setNickname(memberName);
+                    player.setRole("PLAYER");
                     return player;
                 }
             }
@@ -239,39 +245,116 @@ public class GameDataManager implements Searchable {
         return null;
     }
 
+    private Player findRealPlayerById(String id) {
+        if (id == null) {
+            return null;
+        }
+        for (Player player : players) {
+            if (id.equals(player.getId()) || id.equals(player.getNickname())) {
+                return player;
+            }
+        }
+        return null;
+    }
+
+    private long countWins(Player player) {
+        if (player == null) {
+            return 0;
+        }
+        List<MatchRecord> records = player.getMatchOverviews();
+        if (records == null || records.isEmpty()) {
+            return 0;
+        }
+        long wins = 0;
+        for (MatchRecord record : records) {
+            if ("胜利".equals(record.getResult())) {
+                wins++;
+            }
+        }
+        return wins;
+    }
+
     @Override
     public void displayPlayerDetails(String id) {
         if (id == null) {
-            System.out.println("玩家ID不能为空。");
+            System.out.println("玩家ID或昵称不能为空。");
             return;
         }
 
-        Player player = findPlainPlayerById(id);
-        if (player == null) {
-            System.out.println("未找到ID为 " + id + " 的玩家。");
+        Player realPlayer = findRealPlayerById(id);
+        Player plainPlayer = null;
+        if (realPlayer == null) {
+            for (Team team : teams) {
+                if (team.getMemberNames().contains(id)) {
+                    plainPlayer = new Player();
+                    plainPlayer.setId(id);
+                    plainPlayer.setNickname(id);
+                    plainPlayer.setRole("PLAYER");
+                    break;
+                }
+            }
+        }
+
+        Player displayPlayer = realPlayer != null ? realPlayer : plainPlayer;
+        if (displayPlayer == null) {
+            System.out.println("未找到ID或昵称为 " + id + " 的玩家。");
             return;
         }
 
         Team playerTeam = null;
         for (Team team : teams) {
-            if (team.getMemberNames().contains(id)) {
+            String playerNickname = displayPlayer.getNickname();
+            if (playerNickname != null && team.getMemberNames().contains(playerNickname)) {
                 playerTeam = team;
                 break;
             }
         }
 
         System.out.println("===== 玩家详细信息 =====");
-        System.out.println("玩家ID: " + player.getId());
-        System.out.println("昵称: " + player.getNickname());
+        System.out.println("玩家ID: " + displayPlayer.getId());
+        System.out.println("昵称: " + displayPlayer.getNickname());
 
         if (playerTeam != null) {
             System.out.println("所属战队: " + playerTeam.getTeamName()
                     + " (" + playerTeam.getShortName() + ")");
             System.out.println("战队区域: " + playerTeam.getRegion());
-            System.out.println("战队胜率: "
-                    + String.format("%.1f%%", playerTeam.getWinRate() * 100));
             System.out.println("教练: " + playerTeam.getCoachName());
             System.out.println("队长: " + playerTeam.getCaptainName());
+            System.out.println("战队胜率: "
+                    + String.format("%.1f%%", playerTeam.getWinRate() * 100));
+
+            if (realPlayer != null) {
+                int totalMatches = RankingService.calculateTotalMatches(realPlayer);
+                double winRate = RankingService.calculateWinRate(realPlayer);
+                long wins = countWins(realPlayer);
+                long losses = totalMatches - wins;
+
+                System.out.println("\n----- 个人战绩 -----");
+                System.out.println("总场次: " + totalMatches);
+                System.out.println("胜率: " + String.format("%.1f%%", winRate * 100));
+                System.out.println("胜: " + wins + " | 负: " + losses);
+
+                List<MatchRecord> records = realPlayer.getMatchOverviews();
+                if (records != null && !records.isEmpty()) {
+                    System.out.println("\n----- 对局记录摘要 -----");
+                    int showCount = Math.min(5, records.size());
+                    for (int i = 0; i < showCount; i++) {
+                        MatchRecord record = records.get(i);
+                        System.out.println("  对局" + (i + 1) + ": "
+                                + record.getMatchId()
+                                + " | " + record.getMatchMode()
+                                + " | " + record.getResult()
+                                + " | 时长: " + record.getDurationSeconds() + "秒"
+                                + " | 时间: " + record.getMatchTime());
+                    }
+                    if (records.size() > 5) {
+                        System.out.println("  ... (共" + records.size() + "场对局)");
+                    }
+                }
+            } else {
+                System.out.println("\n----- 个人战绩 -----");
+                System.out.println("（该玩家暂无详细战绩数据）");
+            }
 
             System.out.println("\n----- 战队常用英雄 -----");
             for (String heroName : playerTeam.getMainHeroes()) {
@@ -280,7 +363,15 @@ public class GameDataManager implements Searchable {
                     System.out.println("  " + hero.getHeroName()
                             + " [" + hero.getTitle() + "]");
                     System.out.println("    定位: " + hero.getPosition()
-                            + " | 类型: " + hero.getHeroType()
+                            + " | 类型: " + hero.getHeroType());
+                    System.out.println("    技能: " + hero.getPassiveSkill()
+                            + " / " + hero.getSkillOne()
+                            + " / " + hero.getSkillTwo()
+                            + " / " + hero.getSkillThree());
+                    System.out.println("    能力: 生存" + hero.getSurvivalAbility()
+                            + " | 攻击" + hero.getAttackAbility()
+                            + " | 技能" + hero.getSkillAbility()
+                            + " | 辅助" + hero.getSupportAbility()
                             + " | 难度: " + hero.getDifficulty());
 
                     if (!hero.getRecommendedEquipmentIds().isEmpty()) {
@@ -299,6 +390,8 @@ public class GameDataManager implements Searchable {
 
             System.out.println("\n战队荣誉: "
                     + String.join(", ", playerTeam.getHonors()));
+        } else {
+            System.out.println("（该玩家未加入任何战队）");
         }
 
         System.out.println("========================");
