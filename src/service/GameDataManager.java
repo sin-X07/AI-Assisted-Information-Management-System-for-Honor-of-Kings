@@ -2,6 +2,7 @@ package service;
 
 import model.Equipment;
 import model.Hero;
+import model.Player;
 import model.Team;
 import util.DataInitializer;
 
@@ -9,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class GameDataManager implements DataManageable {
+public class GameDataManager implements Searchable {
     private final List<Hero> heroes;
     private final List<Equipment> equipments;
     private final List<Team> teams;
@@ -216,5 +217,13 @@ public class GameDataManager implements DataManageable {
             }
         }
         return false;
+    }
+
+    @Override
+    public Player findPlainPlayerById(String id) {
+    }
+
+    @Override
+    public void displayPlayerDetails(String id) {
     }
 }
