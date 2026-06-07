@@ -1,6 +1,5 @@
 package service;
 
-import model.MatchRecord;
 import model.Player;
 import model.Team;
 
@@ -27,8 +26,9 @@ public class FileStorageService {
 
         List<Player> players = new ArrayList<>(dataManager.getPlayers());
         players.sort(Comparator
-                .comparingDouble(RankingService::calculateWinRate).reversed()
-                .thenComparingInt(RankingService::calculateTotalMatches).reversed());
+                .comparingDouble(RankingService::calculateWinRate)
+                .thenComparingInt(RankingService::calculateTotalMatches)
+                .reversed());
 
         try (BufferedWriter writer = new BufferedWriter(
                 new OutputStreamWriter(

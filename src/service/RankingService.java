@@ -22,24 +22,34 @@ public class RankingService {
         List<Player> players = new ArrayList<>(dataManager.getPlayers());
 
         players.sort(Comparator
-                .comparingDouble(RankingService::calculateWinRate).reversed()
-                .thenComparingInt(RankingService::calculateTotalMatches).reversed());
+                .comparingDouble(RankingService::calculateWinRate)
+                .thenComparingInt(RankingService::calculateTotalMatches)
+                .reversed());
 
         int limit = Math.min(topN, players.size());
 
         System.out.println("===== 玩家荣誉排行榜 TOP " + limit + " =====");
-        System.out.printf("%-4s %-8s %-6s %-12s %-8s %-8s%n",
-                "排名", "ID", "昵称", "战队", "胜率", "总场次");
-        System.out.println("--------------------------------------------------");
+        System.out.printf("%s %s %s %s %s %s%n",
+                formatWithChinese("排名", 4),
+                formatWithChinese("ID", 8),
+                formatWithChinese("昵称", 6),
+                formatWithChinese("战队", 12),
+                formatWithChinese("胜率", 7),
+                formatWithChinese("总场次", 6));
+        System.out.println("------------------------------------------------");
 
         for (int i = 0; i < limit; i++) {
             Player p = players.get(i);
             String teamName = findTeamByPlayer(dataManager, p);
-            System.out.printf("%-4d %-8s %-6s %-12s %7.1f%% %6d%n",
-                    i + 1,
-                    p.getId(),
-                    p.getNickname(),
-                    teamName,
+            String alignedRank = formatWithChinese(String.valueOf(i + 1), 4);
+            String alignedId = formatWithChinese(p.getId(), 8);
+            String alignedNickname = formatWithChinese(p.getNickname(), 6);
+            String alignedTeamName = formatWithChinese(teamName, 12);
+            System.out.printf("%s %s %s %s %7.1f%% %6d%n",
+                    alignedRank,
+                    alignedId,
+                    alignedNickname,
+                    alignedTeamName,
                     calculateWinRate(p) * 100,
                     calculateTotalMatches(p));
         }
@@ -72,5 +82,25 @@ public class RankingService {
             }
         }
         return "无战队";
+    }
+
+    private String formatWithChinese(String str, int totalLen) {
+        if (str == null) str = "无";
+        
+        int currentDisplayWidth = 0;
+        for (char c : str.toCharArray()) {
+            if (Character.toString(c).matches("[\\u4e00-\\u9fa5]")) {
+                currentDisplayWidth += 2;
+            } else {
+                currentDisplayWidth += 1;
+            }
+        }
+        
+        int paddingSpaces = totalLen - currentDisplayWidth;
+        
+        if (paddingSpaces <= 0) {
+            return str;
+        }
+        return str + " ".repeat(paddingSpaces);
     }
 }
