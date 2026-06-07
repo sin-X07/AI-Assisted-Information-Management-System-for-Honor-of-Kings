@@ -1,4 +1,4 @@
-﻿package service;
+package service;
 
 import model.Equipment;
 import model.Hero;
@@ -14,11 +14,13 @@ public class GameDataManager implements Searchable {
     private final List<Hero> heroes;
     private final List<Equipment> equipments;
     private final List<Team> teams;
+    private final List<Player> players;
 
     public GameDataManager() {
         this.heroes = new ArrayList<>(DataInitializer.initializeHeroes());
         this.equipments = new ArrayList<>(DataInitializer.initializeEquipments());
         this.teams = new ArrayList<>(DataInitializer.initializeTeams());
+        this.players = new ArrayList<>(DataInitializer.initializePlayers());
     }
 
     @Override
@@ -300,5 +302,9 @@ public class GameDataManager implements Searchable {
         }
 
         System.out.println("========================");
+    }
+
+    public List<Player> getPlayers() {
+        return Collections.unmodifiableList(new ArrayList<>(players));
     }
 }

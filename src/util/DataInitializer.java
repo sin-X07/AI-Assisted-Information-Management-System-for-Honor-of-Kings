@@ -2,6 +2,9 @@ package util;
 
 import model.Equipment;
 import model.Hero;
+import model.MatchParticipant;
+import model.MatchRecord;
+import model.Player;
 import model.Team;
 
 import java.time.LocalDateTime;
@@ -130,5 +133,58 @@ public class DataInitializer {
                 Arrays.asList("KPL知名战队", "多冠战队代表"), 0.74, 130,
                 "KPL冠军战队代表, 体系成熟且执行力强。", LocalDateTime.now(), "正常"));
         return teams;
+    }
+
+    public static List<Player> initializePlayers() {
+        List<Player> players = new ArrayList<>();
+
+        // T001 重庆狼队
+        players.add(createPlayer("Fly", "Fly", 12, 9));
+        players.add(createPlayer("小胖", "小胖", 11, 7));
+        players.add(createPlayer("向鱼", "向鱼", 10, 7));
+        players.add(createPlayer("妖刀", "妖刀", 12, 8));
+        players.add(createPlayer("一笙", "一笙", 9, 5));
+
+        // T002 成都AG超玩会
+        players.add(createPlayer("一诺", "一诺", 14, 11));
+        players.add(createPlayer("长生", "长生", 10, 8));
+        players.add(createPlayer("轩染", "轩染", 8, 4));
+        players.add(createPlayer("钟意", "钟意", 11, 8));
+        players.add(createPlayer("Cat", "Cat", 13, 10));
+
+        // T003 武汉eStarPro
+        players.add(createPlayer("花海", "花海", 15, 12));
+        players.add(createPlayer("清融", "清融", 12, 7));
+        players.add(createPlayer("坦然", "坦然", 10, 6));
+        players.add(createPlayer("易峥", "易峥", 11, 6));
+        players.add(createPlayer("子阳", "子阳", 9, 5));
+
+        return players;
+    }
+
+    private static Player createPlayer(String id, String nickname, int totalMatches, int wins) {
+        Player player = new Player(id, id, "", nickname);
+        player.setNickname(nickname);
+        List<MatchRecord> records = new ArrayList<>();
+        for (int i = 0; i < totalMatches; i++) {
+            String result = i < wins ? "胜利" : "失败";
+            records.add(buildMatchRecord(id, nickname, i + 1, result));
+        }
+        player.setMatchOverviews(records);
+        return player;
+    }
+
+    private static MatchRecord buildMatchRecord(String playerId, String playerName, int index, String result) {
+        String matchId = "M" + String.format("%03d", index);
+        LocalDateTime matchTime = LocalDateTime.now().minusDays(index * 3L);
+        int durationSeconds = 900 + (index % 9) * 100;
+
+        List<MatchParticipant> participants = new ArrayList<>();
+        participants.add(new MatchParticipant(playerId, playerName, "亚瑟", "蓝方",
+                5 + index % 8, 2 + index % 5, 6 + index % 7));
+        participants.add(new MatchParticipant("OPP" + index, "对手" + index, "后羿", "红方",
+                2 + index % 4, 4 + index % 6, 3 + index % 5));
+
+        return new MatchRecord(matchId, matchTime, "排位赛", result, durationSeconds, participants);
     }
 }
