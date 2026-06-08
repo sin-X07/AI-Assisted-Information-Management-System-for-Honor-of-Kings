@@ -56,7 +56,7 @@ public class RankingService {
         System.out.println("==================================================");
     }
 
-    static double calculateWinRate(Player player) {
+    public static double calculateWinRate(Player player) {
         List<MatchRecord> records = player.getMatchOverviews();
         if (records == null || records.isEmpty()) {
             return 0.0;
@@ -70,7 +70,7 @@ public class RankingService {
         return (double) wins / records.size();
     }
 
-    static int calculateTotalMatches(Player player) {
+    public static int calculateTotalMatches(Player player) {
         List<MatchRecord> records = player.getMatchOverviews();
         return records == null ? 0 : records.size();
     }
