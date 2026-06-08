@@ -1,4 +1,4 @@
-﻿package ui;
+package ui;
 
 import model.Person;
 import org.slf4j.Logger;
@@ -8,9 +8,11 @@ import service.GameDataManager;
 import service.OperationLogService;
 import service.RankingService;
 import ui.panels.*;
+import ui.web.VisualizationServer;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
 
 public class MainFrame extends JFrame {
     private static final Logger log = LoggerFactory.getLogger(MainFrame.class);
@@ -41,6 +43,9 @@ public class MainFrame extends JFrame {
     private JButton rankingBtn;
     private JButton dataMgmtBtn;
     private JButton exportBtn;
+    private JButton vizBtn;
+
+    private VisualizationServer vizServer;
 
     public MainFrame(Person user, GameDataManager dataManager,
                      RankingService rankingService, FileStorageService fileStorageService) {
@@ -50,7 +55,7 @@ public class MainFrame extends JFrame {
         this.fileStorageService = fileStorageService;
         this.opLogService = OperationLogService.getInstance();
 
-        setTitle("\u738B\u8005\u8363\u8000\u4FE1\u606F\u7BA1\u7406\u7CFB\u7EDF");
+        setTitle("王者荣耀信息管理系统");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(1024, 700);
         setLocationRelativeTo(null);
@@ -123,12 +128,22 @@ public class MainFrame extends JFrame {
         rankingBtn.addActionListener(e -> showPanel("ranking"));
         sidebarContent.add(rankingBtn);
 
+        sidebarContent.add(Box.createVerticalStrut(20));
+        JSeparator sep1 = new JSeparator();
+        sep1.setMaximumSize(new Dimension(160, 2));
+        sidebarContent.add(sep1);
+        sidebarContent.add(Box.createVerticalStrut(10));
+
+        vizBtn = createNavButton("数据可视化", btnSize);
+        vizBtn.addActionListener(e -> openVisualization());
+        sidebarContent.add(vizBtn);
+
         boolean isAdmin = "ADMIN".equals(currentUser.getRole());
         if (isAdmin) {
             sidebarContent.add(Box.createVerticalStrut(20));
-            JSeparator sep = new JSeparator();
-            sep.setMaximumSize(new Dimension(160, 2));
-            sidebarContent.add(sep);
+            JSeparator sep2 = new JSeparator();
+            sep2.setMaximumSize(new Dimension(160, 2));
+            sidebarContent.add(sep2);
             sidebarContent.add(Box.createVerticalStrut(10));
 
             dataMgmtBtn = createNavButton("数据管理", btnSize);
@@ -216,6 +231,40 @@ public class MainFrame extends JFrame {
             teamPanel.refreshData();
         }
         cardLayout.show(contentPanel, name);
+    }
+
+    private void openVisualization() {
+        if (vizServer != null) {
+            try {
+                Desktop.getDesktop().browse(new java.net.URI("http://localhost:" + vizServer.getPort()));
+            } catch (Exception e) {
+                log.error("Failed to open visualization browser", e);
+                JOptionPane.showMessageDialog(this,
+                        "可视化服务器已在端口 " + vizServer.getPort() + " 运行。\n请访问 http://localhost:" + vizServer.getPort(),
+                        "数据可视化", JOptionPane.INFORMATION_MESSAGE);
+            }
+            return;
+        }
+
+        // Start the visualization server
+        try {
+            vizServer = new VisualizationServer(dataManager);
+            vizServer.start();
+            log.info("Visualization server started successfully");
+        } catch (IOException e) {
+            log.error("Failed to start visualization server", e);
+            JOptionPane.showMessageDialog(this,
+                    "无法启动可视化服务器: " + e.getMessage(),
+                    "错误", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    @Override
+    public void dispose() {
+        if (vizServer != null) {
+            vizServer.stop();
+        }
+        super.dispose();
     }
 
     private void doExportRanking() {

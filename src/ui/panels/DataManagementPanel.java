@@ -1,4 +1,4 @@
-﻿package ui.panels;
+package ui.panels;
 
 import model.Equipment;
 import model.Hero;

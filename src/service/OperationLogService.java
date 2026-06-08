@@ -1,4 +1,4 @@
-﻿package service;
+package service;
 
 import db.OperationLog;
 import db.OperationLogDao;

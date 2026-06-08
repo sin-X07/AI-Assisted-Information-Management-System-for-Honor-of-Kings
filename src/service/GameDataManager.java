@@ -1,4 +1,4 @@
-﻿package service;
+package service;
 
 import db.GameDataDao;
 import model.Equipment;
@@ -14,6 +14,7 @@ import util.DataInitializer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class GameDataManager implements Searchable {
     private static final Logger log = LoggerFactory.getLogger(GameDataManager.class);
@@ -196,7 +197,7 @@ public class GameDataManager implements Searchable {
         return false;
     }
 
-    // ===== Query operations (unchanged but with logging) =====
+    // ===== Query operations =====
 
     @Override
     public List<Hero> getHeroes() {
@@ -212,6 +213,78 @@ public class GameDataManager implements Searchable {
     public List<Team> getTeams() {
         return Collections.unmodifiableList(new ArrayList<>(teams));
     }
+
+    @Override
+    public List<Player> getPlayers() {
+        return Collections.unmodifiableList(new ArrayList<>(players));
+    }
+
+    // ===== Fuzzy search implementations =====
+
+    @Override
+    public List<Hero> searchHeroes(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return getHeroes();
+        }
+        String lower = keyword.toLowerCase().trim();
+        return heroes.stream()
+                .filter(h ->
+                    (h.getHeroId() != null && h.getHeroId().toLowerCase().contains(lower)) ||
+                    (h.getHeroName() != null && h.getHeroName().toLowerCase().contains(lower)) ||
+                    (h.getTitle() != null && h.getTitle().toLowerCase().contains(lower)) ||
+                    (h.getPosition() != null && h.getPosition().toLowerCase().contains(lower)) ||
+                    (h.getHeroType() != null && h.getHeroType().toLowerCase().contains(lower)) ||
+                    (h.getDifficulty() != null && h.getDifficulty().toLowerCase().contains(lower))
+                )
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Equipment> searchEquipments(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return getEquipments();
+        }
+        String lower = keyword.toLowerCase().trim();
+        return equipments.stream()
+                .filter(e ->
+                    (e.getEquipmentId() != null && e.getEquipmentId().toLowerCase().contains(lower)) ||
+                    (e.getEquipmentName() != null && e.getEquipmentName().toLowerCase().contains(lower)) ||
+                    (e.getEquipmentType() != null && e.getEquipmentType().toLowerCase().contains(lower))
+                )
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Team> searchTeams(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return getTeams();
+        }
+        String lower = keyword.toLowerCase().trim();
+        return teams.stream()
+                .filter(t ->
+                    (t.getTeamId() != null && t.getTeamId().toLowerCase().contains(lower)) ||
+                    (t.getTeamName() != null && t.getTeamName().toLowerCase().contains(lower)) ||
+                    (t.getShortName() != null && t.getShortName().toLowerCase().contains(lower)) ||
+                    (t.getRegion() != null && t.getRegion().toLowerCase().contains(lower))
+                )
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Player> searchPlayers(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return getPlayers();
+        }
+        String lower = keyword.toLowerCase().trim();
+        return players.stream()
+                .filter(p ->
+                    (p.getId() != null && p.getId().toLowerCase().contains(lower)) ||
+                    (p.getNickname() != null && p.getNickname().toLowerCase().contains(lower))
+                )
+                .collect(Collectors.toList());
+    }
+
+    // ===== Exact match methods =====
 
     @Override
     public Hero findHeroById(String heroId) {
@@ -426,9 +499,5 @@ public class GameDataManager implements Searchable {
         }
 
         System.out.println("========================");
-    }
-
-    public List<Player> getPlayers() {
-        return Collections.unmodifiableList(new ArrayList<>(players));
     }
 }

@@ -9,6 +9,7 @@ import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class EquipmentPanel extends JPanel {
@@ -19,7 +20,7 @@ public class EquipmentPanel extends JPanel {
     private JComboBox<String> typeFilter;
     private TableRowSorter<EquipmentTableModel> sorter;
 
-    private static final String[] TYPES = {"\u5168\u90E8", "\u653B\u51FB", "\u6CD5\u672F", "\u9632\u5FA1", "\u79FB\u52A8", "\u6253\u91CE", "\u8F85\u52A9"};
+    private static final String[] TYPES = {"全部", "攻击", "法术", "防御", "移动", "打野", "辅助"};
 
     public EquipmentPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
@@ -30,7 +31,7 @@ public class EquipmentPanel extends JPanel {
 
     private void initSearchBar() {
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        topPanel.add(new JLabel("\u641C\u7D22\u88C5\u5907:"));
+        topPanel.add(new JLabel("搜索装备:"));
 
         searchField = new JTextField(15);
         searchField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
@@ -40,7 +41,7 @@ public class EquipmentPanel extends JPanel {
         });
         topPanel.add(searchField);
 
-        topPanel.add(new JLabel("\u7C7B\u578B:"));
+        topPanel.add(new JLabel("类型:"));
         typeFilter = new JComboBox<>(TYPES);
         typeFilter.addActionListener(e -> applyFilter());
         topPanel.add(typeFilter);
@@ -50,7 +51,7 @@ public class EquipmentPanel extends JPanel {
 
     private void initTable() {
         GameDataManager dm = mainFrame.getDataManager();
-        tableModel = new EquipmentTableModel(dm.getEquipments());
+        tableModel = new EquipmentTableModel(new ArrayList<>(dm.getEquipments()));
         equipTable = new JTable(tableModel);
 
         sorter = new TableRowSorter<>(tableModel);
@@ -92,34 +93,52 @@ public class EquipmentPanel extends JPanel {
         String text = searchField.getText().trim();
         String selectedType = (String) typeFilter.getSelectedItem();
 
-        RowFilter<EquipmentTableModel, Integer> textFilter = null;
-        RowFilter<EquipmentTableModel, Integer> typeFilterObj = null;
+        List<RowFilter<EquipmentTableModel, Integer>> filters = new ArrayList<>();
 
+        // Fuzzy search: case-insensitive contains across ID, name, type (columns 0, 1, 2)
         if (!text.isEmpty()) {
-            textFilter = RowFilter.regexFilter("(?i)" + text, 0, 1, 2);
+            String lower = text.toLowerCase();
+            filters.add(new RowFilter<EquipmentTableModel, Integer>() {
+                @Override
+                public boolean include(Entry<? extends EquipmentTableModel, ? extends Integer> entry) {
+                    for (int i = 0; i <= 2; i++) {
+                        Object val = entry.getValue(i);
+                        if (val != null && val.toString().toLowerCase().contains(lower)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            });
         }
 
-        if (selectedType != null && !"\u5168\u90E8".equals(selectedType)) {
-            typeFilterObj = RowFilter.regexFilter(selectedType, 2);
+        // Type filter on column 2
+        if (selectedType != null && !"全部".equals(selectedType)) {
+            String finalSelectedType = selectedType;
+            filters.add(new RowFilter<EquipmentTableModel, Integer>() {
+                @Override
+                public boolean include(Entry<? extends EquipmentTableModel, ? extends Integer> entry) {
+                    Object val = entry.getValue(2);
+                    return val != null && finalSelectedType.equals(val.toString());
+                }
+            });
         }
 
-        if (textFilter != null && typeFilterObj != null) {
-            sorter.setRowFilter(RowFilter.andFilter(List.of(textFilter, typeFilterObj)));
-        } else if (textFilter != null) {
-            sorter.setRowFilter(textFilter);
-        } else if (typeFilterObj != null) {
-            sorter.setRowFilter(typeFilterObj);
-        } else {
+        if (filters.isEmpty()) {
             sorter.setRowFilter(null);
+        } else if (filters.size() == 1) {
+            sorter.setRowFilter(filters.get(0));
+        } else {
+            sorter.setRowFilter(RowFilter.andFilter(filters));
         }
     }
 
     public void refreshData() {
-        tableModel.setEquipments(mainFrame.getDataManager().getEquipments());
+        tableModel.setEquipments(new ArrayList<>(mainFrame.getDataManager().getEquipments()));
     }
 
     static class EquipmentTableModel extends AbstractTableModel {
-        private final String[] columns = {"\u7F16\u53F7", "\u540D\u79F0", "\u7C7B\u578B", "\u4EF7\u683C(\u91D1\u5E01)"};
+        private final String[] columns = {"编号", "名称", "类型", "价格(金币)"};
         private List<Equipment> equipments;
 
         EquipmentTableModel(List<Equipment> equipments) {

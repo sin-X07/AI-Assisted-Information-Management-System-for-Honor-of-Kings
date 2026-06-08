@@ -1,4 +1,4 @@
-﻿import db.DatabaseManager;
+import db.DatabaseManager;
 import model.Equipment;
 import model.Hero;
 import model.Person;

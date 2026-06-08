@@ -24,12 +24,12 @@ public class PlayerQueryPanel extends JPanel {
 
     private void initSearchBar() {
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        topPanel.add(new JLabel("\u73A9\u5BB6ID\u6216\u6635\u79F0:"));
+        topPanel.add(new JLabel("玩家ID或昵称:"));
 
         searchField = new JTextField(15);
         topPanel.add(searchField);
 
-        JButton searchBtn = new JButton("\u67E5\u8BE2");
+        JButton searchBtn = new JButton("查询");
         searchBtn.addActionListener(e -> doSearch());
         topPanel.add(searchBtn);
 
@@ -49,41 +49,42 @@ public class PlayerQueryPanel extends JPanel {
     private void doSearch() {
         String keyword = searchField.getText().trim();
         if (keyword.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "\u8BF7\u8F93\u5165\u73A9\u5BB6ID\u6216\u6635\u79F0",
-                    "\u63D0\u793A", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "请输入玩家ID或昵称",
+                    "提示", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         GameDataManager dm = mainFrame.getDataManager();
         resultPanel.removeAll();
 
-        Player foundPlayer = null;
-        for (Player p : dm.getPlayers()) {
-            if (keyword.equals(p.getId()) || keyword.equals(p.getNickname())) {
-                foundPlayer = p;
-                break;
-            }
-        }
+        // Fuzzy search for players (matches by ID or nickname, case-insensitive)
+        List<Player> matchingPlayers = dm.searchPlayers(keyword);
 
-        if (foundPlayer == null) {
+        if (matchingPlayers.isEmpty()) {
+            // Also check team members by name
             for (Team team : dm.getTeams()) {
-                if (team.getMemberNames().contains(keyword)) {
-                    foundPlayer = new Player();
-                    foundPlayer.setId(keyword);
-                    foundPlayer.setNickname(keyword);
-                    foundPlayer.setRole("PLAYER");
-                    break;
+                for (String memberName : team.getMemberNames()) {
+                    if (memberName != null && memberName.toLowerCase().contains(keyword.toLowerCase())) {
+                        Player p = new Player();
+                        p.setId(memberName);
+                        p.setNickname(memberName);
+                        p.setRole("PLAYER");
+                        matchingPlayers.add(p);
+                    }
                 }
             }
         }
 
-        if (foundPlayer == null) {
-            JLabel notFound = new JLabel("\u672A\u627E\u5230\u73A9\u5BB6: " + keyword);
+        if (matchingPlayers.isEmpty()) {
+            JLabel notFound = new JLabel("未找到匹配的玩家: " + keyword);
             notFound.setFont(new Font("Microsoft YaHei", Font.PLAIN, 14));
             notFound.setForeground(Color.RED);
             resultPanel.add(notFound);
         } else {
-            buildResultView(foundPlayer);
+            for (Player player : matchingPlayers) {
+                buildResultView(player);
+                resultPanel.add(Box.createVerticalStrut(12));
+            }
         }
 
         resultPanel.revalidate();
@@ -93,13 +94,13 @@ public class PlayerQueryPanel extends JPanel {
     private void buildResultView(Player player) {
         GameDataManager dm = mainFrame.getDataManager();
 
-        resultPanel.add(createSectionLabel("\u25A0 \u73A9\u5BB6\u4FE1\u606F"));
+        resultPanel.add(createSectionLabel("■ 玩家信息"));
         addInfoRow("ID: " + player.getId());
-        addInfoRow("\u6635\u79F0: " + player.getNickname());
+        addInfoRow("昵称: " + player.getNickname());
         if (player.getGameId() != null) {
-            addInfoRow("\u6E38\u620FID: " + player.getGameId() + " | \u533A\u670D: " + player.getServerArea());
-            addInfoRow("\u6BB5\u4F4D: " + player.getRank() + " | \u7B49\u7EA7: " + player.getLevel());
-            addInfoRow("\u4E3B\u73A9\u4F4D\u7F6E: " + player.getMainPosition() + " | \u559C\u7231\u82F1\u96C4: " + player.getFavoriteHero());
+            addInfoRow("游戏ID: " + player.getGameId() + " | 区服: " + player.getServerArea());
+            addInfoRow("段位: " + player.getRank() + " | 等级: " + player.getLevel());
+            addInfoRow("主玩位置: " + player.getMainPosition() + " | 喜爱英雄: " + player.getFavoriteHero());
         }
 
         Team playerTeam = null;
@@ -112,29 +113,29 @@ public class PlayerQueryPanel extends JPanel {
 
         if (playerTeam != null) {
             resultPanel.add(Box.createVerticalStrut(8));
-            resultPanel.add(createSectionLabel("\u25A0 \u6240\u5C5E\u6218\u961F"));
+            resultPanel.add(createSectionLabel("■ 所属战队"));
             addInfoRow(playerTeam.getTeamName() + " (" + playerTeam.getShortName() + ")");
-            addInfoRow("\u5730\u533A: " + playerTeam.getRegion() + " | \u6559\u7EC3: " + playerTeam.getCoachName());
-            addInfoRow("\u961F\u957F: " + playerTeam.getCaptainName());
-            addInfoRow("\u6218\u961F\u80DC\u7387: " + String.format("%.1f%%", playerTeam.getWinRate() * 100));
-            addInfoRow("\u8363\u8A89: " + String.join(", ", playerTeam.getHonors()));
+            addInfoRow("地区: " + playerTeam.getRegion() + " | 教练: " + playerTeam.getCoachName());
+            addInfoRow("队长: " + playerTeam.getCaptainName());
+            addInfoRow("战队胜率: " + String.format("%.1f%%", playerTeam.getWinRate() * 100));
+            addInfoRow("荣誉: " + String.join(", ", playerTeam.getHonors()));
 
             if (player.getGameId() != null) {
                 List<MatchRecord> records = player.getMatchOverviews();
                 if (records != null && !records.isEmpty()) {
                     int totalMatches = RankingService.calculateTotalMatches(player);
                     double winRate = RankingService.calculateWinRate(player);
-                    long wins = records.stream().filter(r -> "\u80DC\u5229".equals(r.getResult())).count();
+                    long wins = records.stream().filter(r -> "胜利".equals(r.getResult())).count();
 
                     resultPanel.add(Box.createVerticalStrut(8));
-                    resultPanel.add(createSectionLabel("\u25A0 \u4E2A\u4EBA\u6218\u7EE9"));
-                    addInfoRow("\u603B\u573A\u6B21: " + totalMatches + " | \u80DC\u7387: " + String.format("%.1f%%", winRate * 100));
-                    addInfoRow("\u80DC: " + wins + " | \u8D1F: " + (totalMatches - wins));
+                    resultPanel.add(createSectionLabel("■ 个人战绩"));
+                    addInfoRow("总场次: " + totalMatches + " | 胜率: " + String.format("%.1f%%", winRate * 100));
+                    addInfoRow("胜: " + wins + " | 负: " + (totalMatches - wins));
                 }
             }
 
             resultPanel.add(Box.createVerticalStrut(8));
-            resultPanel.add(createSectionLabel("\u25A0 \u6218\u961F\u5E38\u7528\u82F1\u96C4\u53CA\u63A8\u8350\u88C5\u5907"));
+            resultPanel.add(createSectionLabel("■ 战队常用英雄及推荐装备"));
 
             for (String heroName : playerTeam.getMainHeroes()) {
                 Hero hero = dm.findHeroByName(heroName);
@@ -151,15 +152,15 @@ public class PlayerQueryPanel extends JPanel {
                     heroNameLabel.setFont(new Font("Microsoft YaHei", Font.BOLD, 13));
                     heroCard.add(heroNameLabel);
 
-                    addInfoRowToPanel(heroCard, "\u5B9A\u4F4D: " + hero.getPosition() + " | \u7C7B\u578B: " + hero.getHeroType()
-                            + " | \u96BE\u5EA6: " + hero.getDifficulty());
-                    addInfoRowToPanel(heroCard, "\u80FD\u529B: \u751F\u5B58" + hero.getSurvivalAbility()
-                            + " | \u653B\u51FB" + hero.getAttackAbility()
-                            + " | \u6280\u80FD" + hero.getSkillAbility()
-                            + " | \u8F85\u52A9" + hero.getSupportAbility());
+                    addInfoRowToPanel(heroCard, "定位: " + hero.getPosition() + " | 类型: " + hero.getHeroType()
+                            + " | 难度: " + hero.getDifficulty());
+                    addInfoRowToPanel(heroCard, "能力: 生存" + hero.getSurvivalAbility()
+                            + " | 攻击" + hero.getAttackAbility()
+                            + " | 技能" + hero.getSkillAbility()
+                            + " | 辅助" + hero.getSupportAbility());
 
                     if (!hero.getRecommendedEquipmentIds().isEmpty()) {
-                        StringBuilder eqStr = new StringBuilder("\u63A8\u8350\u88C5\u5907: ");
+                        StringBuilder eqStr = new StringBuilder("推荐装备: ");
                         for (int i = 0; i < hero.getRecommendedEquipmentIds().size(); i++) {
                             Equipment eq = dm.findEquipmentById(hero.getRecommendedEquipmentIds().get(i));
                             if (eq != null) {
@@ -176,7 +177,7 @@ public class PlayerQueryPanel extends JPanel {
             }
         } else {
             resultPanel.add(Box.createVerticalStrut(8));
-            addInfoRow("(\u8BE5\u73A9\u5BB6\u672A\u52A0\u5165\u4EFB\u4F55\u6218\u961F)");
+            addInfoRow("(该玩家未加入任何战队)");
         }
 
         resultPanel.add(Box.createVerticalGlue());

@@ -14,6 +14,20 @@ public interface Searchable {
 
     List<Team> getTeams();
 
+    List<Player> getPlayers();
+
+    /** 模糊搜索英雄 (匹配编号、名称、称号、定位、类型、难度) */
+    List<Hero> searchHeroes(String keyword);
+
+    /** 模糊搜索装备 (匹配编号、名称、类型) */
+    List<Equipment> searchEquipments(String keyword);
+
+    /** 模糊搜索战队 (匹配编号、名称、简称、地区) */
+    List<Team> searchTeams(String keyword);
+
+    /** 模糊搜索玩家 (匹配ID、昵称) */
+    List<Player> searchPlayers(String keyword);
+
     Hero findHeroById(String heroId);
 
     Equipment findEquipmentById(String equipmentId);

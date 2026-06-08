@@ -15,11 +15,29 @@ public class TeamPanel extends JPanel {
     private final MainFrame mainFrame;
     private JTable teamTable;
     private TeamTableModel tableModel;
+    private JTextField searchField;
+    private TableRowSorter<TeamTableModel> sorter;
 
     public TeamPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
         setLayout(new BorderLayout(0, 10));
+        initSearchBar();
         initTable();
+    }
+
+    private void initSearchBar() {
+        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        topPanel.add(new JLabel("搜索战队:"));
+
+        searchField = new JTextField(20);
+        searchField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { filterByKeyword(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { filterByKeyword(); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { filterByKeyword(); }
+        });
+        topPanel.add(searchField);
+
+        add(topPanel, BorderLayout.NORTH);
     }
 
     private void initTable() {
@@ -27,7 +45,7 @@ public class TeamPanel extends JPanel {
         tableModel = new TeamTableModel(dm.getTeams());
         teamTable = new JTable(tableModel);
 
-        TableRowSorter<TeamTableModel> sorter = new TableRowSorter<>(tableModel);
+        sorter = new TableRowSorter<>(tableModel);
         teamTable.setRowSorter(sorter);
 
         teamTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -63,12 +81,33 @@ public class TeamPanel extends JPanel {
         add(scrollPane, BorderLayout.CENTER);
     }
 
+    private void filterByKeyword() {
+        String text = searchField.getText().trim();
+        if (text.isEmpty()) {
+            sorter.setRowFilter(null);
+        } else {
+            String lower = text.toLowerCase();
+            sorter.setRowFilter(new RowFilter<TeamTableModel, Integer>() {
+                @Override
+                public boolean include(Entry<? extends TeamTableModel, ? extends Integer> entry) {
+                    for (int i = 0; i <= 4; i++) {
+                        Object val = entry.getValue(i);
+                        if (val != null && val.toString().toLowerCase().contains(lower)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            });
+        }
+    }
+
     public void refreshData() {
         tableModel.setTeams(mainFrame.getDataManager().getTeams());
     }
 
     static class TeamTableModel extends AbstractTableModel {
-        private final String[] columns = {"\u7F16\u53F7", "\u540D\u79F0", "\u7B80\u79F0", "\u5730\u533A", "\u80DC\u7387"};
+        private final String[] columns = {"编号", "名称", "简称", "地区", "胜率"};
         private List<Team> teams;
 
         TeamTableModel(List<Team> teams) {
