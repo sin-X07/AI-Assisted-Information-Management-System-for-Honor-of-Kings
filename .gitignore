@@ -1,1 +1,9 @@
-out/
+﻿out/
+*.db
+logs/
+target/
+.idea/
+*.iml
+.classpath
+.project
+.settings/

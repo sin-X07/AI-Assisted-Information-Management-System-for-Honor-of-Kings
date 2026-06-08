@@ -1,10 +1,14 @@
-package service;
+﻿package service;
 
+import db.GameDataDao;
 import model.Equipment;
 import model.Hero;
 import model.MatchRecord;
+import model.Person;
 import model.Player;
 import model.Team;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import util.DataInitializer;
 
 import java.util.ArrayList;
@@ -12,17 +16,187 @@ import java.util.Collections;
 import java.util.List;
 
 public class GameDataManager implements Searchable {
+    private static final Logger log = LoggerFactory.getLogger(GameDataManager.class);
+
     private final List<Hero> heroes;
     private final List<Equipment> equipments;
     private final List<Team> teams;
     private final List<Player> players;
+    private final GameDataDao gameDataDao;
+    private final OperationLogService opLogService;
 
     public GameDataManager() {
-        this.heroes = new ArrayList<>(DataInitializer.initializeHeroes());
-        this.equipments = new ArrayList<>(DataInitializer.initializeEquipments());
-        this.teams = new ArrayList<>(DataInitializer.initializeTeams());
+        this.gameDataDao = new GameDataDao();
+        this.opLogService = OperationLogService.getInstance();
+        this.heroes = new ArrayList<>();
+        this.equipments = new ArrayList<>();
+        this.teams = new ArrayList<>();
         this.players = new ArrayList<>(DataInitializer.initializePlayers());
+
+        loadDataFromDatabase();
     }
+
+    /**
+     * Load data from SQLite. If the database is empty, seed from DataInitializer.
+     */
+    private void loadDataFromDatabase() {
+        List<Hero> dbHeroes = gameDataDao.findAllHeroes();
+        if (dbHeroes.isEmpty()) {
+            heroes.addAll(DataInitializer.initializeHeroes());
+            log.info("No heroes found in DB, loaded {} from initializer.", heroes.size());
+        } else {
+            heroes.addAll(dbHeroes);
+            log.info("Loaded {} heroes from database.", dbHeroes.size());
+        }
+
+        List<Equipment> dbEquips = gameDataDao.findAllEquipments();
+        if (dbEquips.isEmpty()) {
+            equipments.addAll(DataInitializer.initializeEquipments());
+            log.info("No equipments found in DB, loaded {} from initializer.", equipments.size());
+        } else {
+            equipments.addAll(dbEquips);
+            log.info("Loaded {} equipments from database.", dbEquips.size());
+        }
+
+        List<Team> dbTeams = gameDataDao.findAllTeams();
+        if (dbTeams.isEmpty()) {
+            teams.addAll(DataInitializer.initializeTeams());
+            log.info("No teams found in DB, loaded {} from initializer.", teams.size());
+        } else {
+            teams.addAll(dbTeams);
+            log.info("Loaded {} teams from database.", dbTeams.size());
+        }
+    }
+
+    // ===== Persist all game data to DB =====
+
+    /** Save all in-memory game data to SQLite. Called on app startup for seeding. */
+    public void persistAllToDatabase() {
+        for (Hero h : heroes) gameDataDao.insertHero(h);
+        for (Equipment e : equipments) gameDataDao.insertEquipment(e);
+        for (Team t : teams) gameDataDao.insertTeam(t);
+        log.info("All game data persisted to database. Heroes={}, Equipments={}, Teams={}",
+                heroes.size(), equipments.size(), teams.size());
+    }
+
+    // ===== Hero operations =====
+
+    @Override
+    public void addHero(Hero hero) {
+        if (hero != null) {
+            heroes.add(hero);
+            gameDataDao.insertHero(hero);
+            log.debug("Hero [{}] added.", hero.getHeroName());
+        }
+    }
+
+    @Override
+    public boolean removeHeroById(String heroId) {
+        if (heroId == null) return false;
+        for (int i = 0; i < heroes.size(); i++) {
+            if (heroId.equals(heroes.get(i).getHeroId())) {
+                Hero removed = heroes.remove(i);
+                gameDataDao.deleteHeroById(heroId);
+                log.debug("Hero [{}] removed.", removed.getHeroName());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean updateHero(Hero hero) {
+        if (hero == null || hero.getHeroId() == null) return false;
+        for (int i = 0; i < heroes.size(); i++) {
+            if (hero.getHeroId().equals(heroes.get(i).getHeroId())) {
+                heroes.set(i, hero);
+                gameDataDao.insertHero(hero); // INSERT OR REPLACE
+                log.debug("Hero [{}] updated.", hero.getHeroName());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // ===== Equipment operations =====
+
+    @Override
+    public void addEquipment(Equipment equipment) {
+        if (equipment != null) {
+            equipments.add(equipment);
+            gameDataDao.insertEquipment(equipment);
+            log.debug("Equipment [{}] added.", equipment.getEquipmentName());
+        }
+    }
+
+    @Override
+    public boolean removeEquipmentById(String equipmentId) {
+        if (equipmentId == null) return false;
+        for (int i = 0; i < equipments.size(); i++) {
+            if (equipmentId.equals(equipments.get(i).getEquipmentId())) {
+                Equipment removed = equipments.remove(i);
+                gameDataDao.deleteEquipmentById(equipmentId);
+                log.debug("Equipment [{}] removed.", removed.getEquipmentName());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean updateEquipment(Equipment equipment) {
+        if (equipment == null || equipment.getEquipmentId() == null) return false;
+        for (int i = 0; i < equipments.size(); i++) {
+            if (equipment.getEquipmentId().equals(equipments.get(i).getEquipmentId())) {
+                equipments.set(i, equipment);
+                gameDataDao.insertEquipment(equipment);
+                log.debug("Equipment [{}] updated.", equipment.getEquipmentName());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // ===== Team operations =====
+
+    @Override
+    public void addTeam(Team team) {
+        if (team != null) {
+            teams.add(team);
+            gameDataDao.insertTeam(team);
+            log.debug("Team [{}] added.", team.getTeamName());
+        }
+    }
+
+    @Override
+    public boolean removeTeamById(String teamId) {
+        if (teamId == null) return false;
+        for (int i = 0; i < teams.size(); i++) {
+            if (teamId.equals(teams.get(i).getTeamId())) {
+                Team removed = teams.remove(i);
+                gameDataDao.deleteTeamById(teamId);
+                log.debug("Team [{}] removed.", removed.getTeamName());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean updateTeam(Team team) {
+        if (team == null || team.getTeamId() == null) return false;
+        for (int i = 0; i < teams.size(); i++) {
+            if (team.getTeamId().equals(teams.get(i).getTeamId())) {
+                teams.set(i, team);
+                gameDataDao.insertTeam(team);
+                log.debug("Team [{}] updated.", team.getTeamName());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // ===== Query operations (unchanged but with logging) =====
 
     @Override
     public List<Hero> getHeroes() {
@@ -41,196 +215,63 @@ public class GameDataManager implements Searchable {
 
     @Override
     public Hero findHeroById(String heroId) {
-        if (heroId == null) {
-            return null;
-        }
+        if (heroId == null) return null;
         for (Hero hero : heroes) {
-            if (heroId.equals(hero.getHeroId())) {
-                return hero;
-            }
+            if (heroId.equals(hero.getHeroId())) return hero;
         }
         return null;
     }
 
     @Override
     public Equipment findEquipmentById(String equipmentId) {
-        if (equipmentId == null) {
-            return null;
-        }
+        if (equipmentId == null) return null;
         for (Equipment equipment : equipments) {
-            if (equipmentId.equals(equipment.getEquipmentId())) {
-                return equipment;
-            }
+            if (equipmentId.equals(equipment.getEquipmentId())) return equipment;
         }
         return null;
     }
 
     @Override
     public Team findTeamById(String teamId) {
-        if (teamId == null) {
-            return null;
-        }
+        if (teamId == null) return null;
         for (Team team : teams) {
-            if (teamId.equals(team.getTeamId())) {
-                return team;
-            }
+            if (teamId.equals(team.getTeamId())) return team;
         }
         return null;
     }
 
     @Override
     public Hero findHeroByName(String heroName) {
-        if (heroName == null) {
-            return null;
-        }
+        if (heroName == null) return null;
         for (Hero hero : heroes) {
-            if (heroName.equals(hero.getHeroName())) {
-                return hero;
-            }
+            if (heroName.equals(hero.getHeroName())) return hero;
         }
         return null;
     }
 
     @Override
     public Equipment findEquipmentByName(String equipmentName) {
-        if (equipmentName == null) {
-            return null;
-        }
+        if (equipmentName == null) return null;
         for (Equipment equipment : equipments) {
-            if (equipmentName.equals(equipment.getEquipmentName())) {
-                return equipment;
-            }
+            if (equipmentName.equals(equipment.getEquipmentName())) return equipment;
         }
         return null;
     }
 
     @Override
     public Team findTeamByName(String teamName) {
-        if (teamName == null) {
-            return null;
-        }
+        if (teamName == null) return null;
         for (Team team : teams) {
-            if (teamName.equals(team.getTeamName())) {
-                return team;
-            }
+            if (teamName.equals(team.getTeamName())) return team;
         }
         return null;
     }
 
     @Override
-    public void addHero(Hero hero) {
-        if (hero != null) {
-            heroes.add(hero);
-        }
-    }
-
-    @Override
-    public void addEquipment(Equipment equipment) {
-        if (equipment != null) {
-            equipments.add(equipment);
-        }
-    }
-
-    @Override
-    public void addTeam(Team team) {
-        if (team != null) {
-            teams.add(team);
-        }
-    }
-
-    @Override
-    public boolean removeHeroById(String heroId) {
-        if (heroId == null) {
-            return false;
-        }
-        for (int i = 0; i < heroes.size(); i++) {
-            if (heroId.equals(heroes.get(i).getHeroId())) {
-                heroes.remove(i);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public boolean removeEquipmentById(String equipmentId) {
-        if (equipmentId == null) {
-            return false;
-        }
-        for (int i = 0; i < equipments.size(); i++) {
-            if (equipmentId.equals(equipments.get(i).getEquipmentId())) {
-                equipments.remove(i);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public boolean removeTeamById(String teamId) {
-        if (teamId == null) {
-            return false;
-        }
-        for (int i = 0; i < teams.size(); i++) {
-            if (teamId.equals(teams.get(i).getTeamId())) {
-                teams.remove(i);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public boolean updateHero(Hero hero) {
-        if (hero == null || hero.getHeroId() == null) {
-            return false;
-        }
-        for (int i = 0; i < heroes.size(); i++) {
-            if (hero.getHeroId().equals(heroes.get(i).getHeroId())) {
-                heroes.set(i, hero);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public boolean updateEquipment(Equipment equipment) {
-        if (equipment == null || equipment.getEquipmentId() == null) {
-            return false;
-        }
-        for (int i = 0; i < equipments.size(); i++) {
-            if (equipment.getEquipmentId().equals(equipments.get(i).getEquipmentId())) {
-                equipments.set(i, equipment);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public boolean updateTeam(Team team) {
-        if (team == null || team.getTeamId() == null) {
-            return false;
-        }
-        for (int i = 0; i < teams.size(); i++) {
-            if (team.getTeamId().equals(teams.get(i).getTeamId())) {
-                teams.set(i, team);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
     public Player findPlainPlayerById(String id) {
-        if (id == null) {
-            return null;
-        }
+        if (id == null) return null;
         Player realPlayer = findRealPlayerById(id);
-        if (realPlayer != null) {
-            return realPlayer;
-        }
+        if (realPlayer != null) return realPlayer;
         for (Team team : teams) {
             for (String memberName : team.getMemberNames()) {
                 if (id.equals(memberName)) {
@@ -246,30 +287,20 @@ public class GameDataManager implements Searchable {
     }
 
     private Player findRealPlayerById(String id) {
-        if (id == null) {
-            return null;
-        }
+        if (id == null) return null;
         for (Player player : players) {
-            if (id.equals(player.getId()) || id.equals(player.getNickname())) {
-                return player;
-            }
+            if (id.equals(player.getId()) || id.equals(player.getNickname())) return player;
         }
         return null;
     }
 
     private long countWins(Player player) {
-        if (player == null) {
-            return 0;
-        }
+        if (player == null) return 0;
         List<MatchRecord> records = player.getMatchOverviews();
-        if (records == null || records.isEmpty()) {
-            return 0;
-        }
+        if (records == null || records.isEmpty()) return 0;
         long wins = 0;
         for (MatchRecord record : records) {
-            if ("胜利".equals(record.getResult())) {
-                wins++;
-            }
+            if ("胜利".equals(record.getResult())) wins++;
         }
         return wins;
     }

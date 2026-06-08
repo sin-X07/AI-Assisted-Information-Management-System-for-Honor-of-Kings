@@ -1,8 +1,12 @@
-package ui.panels;
+﻿package ui.panels;
 
 import model.Equipment;
 import model.Hero;
+import model.Person;
 import model.Team;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import service.OperationLogService;
 import ui.MainFrame;
 import ui.dialogs.EquipmentEditDialog;
 import ui.dialogs.HeroEditDialog;
@@ -15,7 +19,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DataManagementPanel extends JPanel {
+    private static final Logger log = LoggerFactory.getLogger(DataManagementPanel.class);
+
     private final MainFrame mainFrame;
+    private final Person currentUser;
+    private final OperationLogService opLogService;
 
     private JTable heroMgmtTable;
     private HeroMgmtTableModel heroMgmtModel;
@@ -28,13 +36,15 @@ public class DataManagementPanel extends JPanel {
 
     public DataManagementPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
+        this.currentUser = mainFrame.getCurrentUser();
+        this.opLogService = mainFrame.getOperationLogService();
         setLayout(new BorderLayout());
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.setFont(new Font("Microsoft YaHei", Font.PLAIN, 13));
 
-        tabbedPane.addTab("\u82F1\u96C4\u7BA1\u7406", createHeroTab());
-        tabbedPane.addTab("\u88C5\u5907\u7BA1\u7406", createEquipmentTab());
-        tabbedPane.addTab("\u6218\u961F\u7BA1\u7406", createTeamTab());
+        tabbedPane.addTab("英雄管理", createHeroTab());
+        tabbedPane.addTab("装备管理", createEquipmentTab());
+        tabbedPane.addTab("战队管理", createTeamTab());
 
         add(tabbedPane, BorderLayout.CENTER);
     }
@@ -43,9 +53,9 @@ public class DataManagementPanel extends JPanel {
         JPanel panel = new JPanel(new BorderLayout(0, 8));
 
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton addBtn = new JButton("\u6DFB\u52A0\u82F1\u96C4");
-        JButton editBtn = new JButton("\u7F16\u8F91\u82F1\u96C4");
-        JButton deleteBtn = new JButton("\u5220\u9664\u82F1\u96C4");
+        JButton addBtn = new JButton("添加英雄");
+        JButton editBtn = new JButton("编辑英雄");
+        JButton deleteBtn = new JButton("删除英雄");
         btnPanel.add(addBtn);
         btnPanel.add(editBtn);
         btnPanel.add(deleteBtn);
@@ -67,16 +77,19 @@ public class DataManagementPanel extends JPanel {
                     mainFrame.getDataManager(), null);
             dialog.setVisible(true);
             if (dialog.isConfirmed()) {
-                mainFrame.getDataManager().addHero(dialog.getHero());
+                Hero hero = dialog.getHero();
+                mainFrame.getDataManager().addHero(hero);
                 refreshHeroTable();
+                opLogService.logSuccess(currentUser, "ADD", "HERO", hero.getHeroId(),
+                        "添加英雄: " + hero.getHeroName());
             }
         });
 
         editBtn.addActionListener(e -> {
             int row = heroMgmtTable.getSelectedRow();
             if (row < 0) {
-                JOptionPane.showMessageDialog(this, "\u8BF7\u5148\u9009\u62E9\u8981\u7F16\u8F91\u7684\u82F1\u96C4",
-                        "\u63D0\u793A", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(this, "请先选择要编辑的英雄",
+                        "提示", JOptionPane.WARNING_MESSAGE);
                 return;
             }
             Hero hero = heroMgmtModel.getHeroAt(row);
@@ -85,25 +98,32 @@ public class DataManagementPanel extends JPanel {
                     mainFrame.getDataManager(), hero);
             dialog.setVisible(true);
             if (dialog.isConfirmed()) {
-                mainFrame.getDataManager().updateHero(dialog.getHero());
+                Hero updated = dialog.getHero();
+                mainFrame.getDataManager().updateHero(updated);
                 refreshHeroTable();
+                opLogService.logSuccess(currentUser, "UPDATE", "HERO", updated.getHeroId(),
+                        "更新英雄: " + updated.getHeroName());
             }
         });
 
         deleteBtn.addActionListener(e -> {
             int row = heroMgmtTable.getSelectedRow();
             if (row < 0) {
-                JOptionPane.showMessageDialog(this, "\u8BF7\u5148\u9009\u62E9\u8981\u5220\u9664\u7684\u82F1\u96C4",
-                        "\u63D0\u793A", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(this, "请先选择要删除的英雄",
+                        "提示", JOptionPane.WARNING_MESSAGE);
                 return;
             }
             Hero hero = heroMgmtModel.getHeroAt(row);
             int result = JOptionPane.showConfirmDialog(this,
-                    "\u786E\u5B9A\u5220\u9664\u82F1\u96C4 [" + hero.getHeroName() + "] \u5417?",
-                    "\u786E\u8BA4\u5220\u9664", JOptionPane.YES_NO_OPTION);
+                    "确定删除英雄 [" + hero.getHeroName() + "] 吗?",
+                    "确认删除", JOptionPane.YES_NO_OPTION);
             if (result == JOptionPane.YES_OPTION) {
-                mainFrame.getDataManager().removeHeroById(hero.getHeroId());
+                String heroId = hero.getHeroId();
+                String heroName = hero.getHeroName();
+                mainFrame.getDataManager().removeHeroById(heroId);
                 refreshHeroTable();
+                opLogService.logSuccess(currentUser, "DELETE", "HERO", heroId,
+                        "删除英雄: " + heroName);
             }
         });
 
@@ -114,9 +134,9 @@ public class DataManagementPanel extends JPanel {
         JPanel panel = new JPanel(new BorderLayout(0, 8));
 
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton addBtn = new JButton("\u6DFB\u52A0\u88C5\u5907");
-        JButton editBtn = new JButton("\u7F16\u8F91\u88C5\u5907");
-        JButton deleteBtn = new JButton("\u5220\u9664\u88C5\u5907");
+        JButton addBtn = new JButton("添加装备");
+        JButton editBtn = new JButton("编辑装备");
+        JButton deleteBtn = new JButton("删除装备");
         btnPanel.add(addBtn);
         btnPanel.add(editBtn);
         btnPanel.add(deleteBtn);
@@ -138,16 +158,19 @@ public class DataManagementPanel extends JPanel {
                     mainFrame.getDataManager(), null);
             dialog.setVisible(true);
             if (dialog.isConfirmed()) {
-                mainFrame.getDataManager().addEquipment(dialog.getEquipment());
+                Equipment eq = dialog.getEquipment();
+                mainFrame.getDataManager().addEquipment(eq);
                 refreshEquipTable();
+                opLogService.logSuccess(currentUser, "ADD", "EQUIPMENT", eq.getEquipmentId(),
+                        "添加装备: " + eq.getEquipmentName());
             }
         });
 
         editBtn.addActionListener(e -> {
             int row = equipMgmtTable.getSelectedRow();
             if (row < 0) {
-                JOptionPane.showMessageDialog(this, "\u8BF7\u5148\u9009\u62E9\u8981\u7F16\u8F91\u7684\u88C5\u5907",
-                        "\u63D0\u793A", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(this, "请先选择要编辑的装备",
+                        "提示", JOptionPane.WARNING_MESSAGE);
                 return;
             }
             Equipment eq = equipMgmtModel.getEquipmentAt(row);
@@ -156,25 +179,32 @@ public class DataManagementPanel extends JPanel {
                     mainFrame.getDataManager(), eq);
             dialog.setVisible(true);
             if (dialog.isConfirmed()) {
-                mainFrame.getDataManager().updateEquipment(dialog.getEquipment());
+                Equipment updated = dialog.getEquipment();
+                mainFrame.getDataManager().updateEquipment(updated);
                 refreshEquipTable();
+                opLogService.logSuccess(currentUser, "UPDATE", "EQUIPMENT", updated.getEquipmentId(),
+                        "更新装备: " + updated.getEquipmentName());
             }
         });
 
         deleteBtn.addActionListener(e -> {
             int row = equipMgmtTable.getSelectedRow();
             if (row < 0) {
-                JOptionPane.showMessageDialog(this, "\u8BF7\u5148\u9009\u62E9\u8981\u5220\u9664\u7684\u88C5\u5907",
-                        "\u63D0\u793A", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(this, "请先选择要删除的装备",
+                        "提示", JOptionPane.WARNING_MESSAGE);
                 return;
             }
             Equipment eq = equipMgmtModel.getEquipmentAt(row);
             int result = JOptionPane.showConfirmDialog(this,
-                    "\u786E\u5B9A\u5220\u9664\u88C5\u5907 [" + eq.getEquipmentName() + "] \u5417?",
-                    "\u786E\u8BA4\u5220\u9664", JOptionPane.YES_NO_OPTION);
+                    "确定删除装备 [" + eq.getEquipmentName() + "] 吗?",
+                    "确认删除", JOptionPane.YES_NO_OPTION);
             if (result == JOptionPane.YES_OPTION) {
-                mainFrame.getDataManager().removeEquipmentById(eq.getEquipmentId());
+                String eqId = eq.getEquipmentId();
+                String eqName = eq.getEquipmentName();
+                mainFrame.getDataManager().removeEquipmentById(eqId);
                 refreshEquipTable();
+                opLogService.logSuccess(currentUser, "DELETE", "EQUIPMENT", eqId,
+                        "删除装备: " + eqName);
             }
         });
 
@@ -185,9 +215,9 @@ public class DataManagementPanel extends JPanel {
         JPanel panel = new JPanel(new BorderLayout(0, 8));
 
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton addBtn = new JButton("\u6DFB\u52A0\u6218\u961F");
-        JButton editBtn = new JButton("\u7F16\u8F91\u6218\u961F");
-        JButton deleteBtn = new JButton("\u5220\u9664\u6218\u961F");
+        JButton addBtn = new JButton("添加战队");
+        JButton editBtn = new JButton("编辑战队");
+        JButton deleteBtn = new JButton("删除战队");
         btnPanel.add(addBtn);
         btnPanel.add(editBtn);
         btnPanel.add(deleteBtn);
@@ -209,16 +239,19 @@ public class DataManagementPanel extends JPanel {
                     mainFrame.getDataManager(), null);
             dialog.setVisible(true);
             if (dialog.isConfirmed()) {
-                mainFrame.getDataManager().addTeam(dialog.getTeam());
+                Team team = dialog.getTeam();
+                mainFrame.getDataManager().addTeam(team);
                 refreshTeamTable();
+                opLogService.logSuccess(currentUser, "ADD", "TEAM", team.getTeamId(),
+                        "添加战队: " + team.getTeamName());
             }
         });
 
         editBtn.addActionListener(e -> {
             int row = teamMgmtTable.getSelectedRow();
             if (row < 0) {
-                JOptionPane.showMessageDialog(this, "\u8BF7\u5148\u9009\u62E9\u8981\u7F16\u8F91\u7684\u6218\u961F",
-                        "\u63D0\u793A", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(this, "请先选择要编辑的战队",
+                        "提示", JOptionPane.WARNING_MESSAGE);
                 return;
             }
             Team team = teamMgmtModel.getTeamAt(row);
@@ -227,25 +260,32 @@ public class DataManagementPanel extends JPanel {
                     mainFrame.getDataManager(), team);
             dialog.setVisible(true);
             if (dialog.isConfirmed()) {
-                mainFrame.getDataManager().updateTeam(dialog.getTeam());
+                Team updated = dialog.getTeam();
+                mainFrame.getDataManager().updateTeam(updated);
                 refreshTeamTable();
+                opLogService.logSuccess(currentUser, "UPDATE", "TEAM", updated.getTeamId(),
+                        "更新战队: " + updated.getTeamName());
             }
         });
 
         deleteBtn.addActionListener(e -> {
             int row = teamMgmtTable.getSelectedRow();
             if (row < 0) {
-                JOptionPane.showMessageDialog(this, "\u8BF7\u5148\u9009\u62E9\u8981\u5220\u9664\u7684\u6218\u961F",
-                        "\u63D0\u793A", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(this, "请先选择要删除的战队",
+                        "提示", JOptionPane.WARNING_MESSAGE);
                 return;
             }
             Team team = teamMgmtModel.getTeamAt(row);
             int result = JOptionPane.showConfirmDialog(this,
-                    "\u786E\u5B9A\u5220\u9664\u6218\u961F [" + team.getTeamName() + "] \u5417?",
-                    "\u786E\u8BA4\u5220\u9664", JOptionPane.YES_NO_OPTION);
+                    "确定删除战队 [" + team.getTeamName() + "] 吗?",
+                    "确认删除", JOptionPane.YES_NO_OPTION);
             if (result == JOptionPane.YES_OPTION) {
-                mainFrame.getDataManager().removeTeamById(team.getTeamId());
+                String teamId = team.getTeamId();
+                String teamName = team.getTeamName();
+                mainFrame.getDataManager().removeTeamById(teamId);
                 refreshTeamTable();
+                opLogService.logSuccess(currentUser, "DELETE", "TEAM", teamId,
+                        "删除战队: " + teamName);
             }
         });
 
@@ -271,7 +311,7 @@ public class DataManagementPanel extends JPanel {
     }
 
     static class HeroMgmtTableModel extends AbstractTableModel {
-        private final String[] columns = {"\u7F16\u53F7", "\u540D\u79F0", "\u79F0\u53F7", "\u5B9A\u4F4D", "\u7C7B\u578B", "\u96BE\u5EA6"};
+        private final String[] columns = {"编号", "名称", "称号", "定位", "类型", "难度"};
         private List<Hero> heroes = new ArrayList<>();
 
         HeroMgmtTableModel(List<Hero> heroes) { this.heroes = new ArrayList<>(heroes); }
@@ -295,7 +335,7 @@ public class DataManagementPanel extends JPanel {
     }
 
     static class EquipMgmtTableModel extends AbstractTableModel {
-        private final String[] columns = {"\u7F16\u53F7", "\u540D\u79F0", "\u7C7B\u578B", "\u4EF7\u683C"};
+        private final String[] columns = {"编号", "名称", "类型", "价格"};
         private List<Equipment> equipments = new ArrayList<>();
 
         EquipMgmtTableModel(List<Equipment> equipments) { this.equipments = new ArrayList<>(equipments); }
@@ -317,7 +357,7 @@ public class DataManagementPanel extends JPanel {
     }
 
     static class TeamMgmtTableModel extends AbstractTableModel {
-        private final String[] columns = {"\u7F16\u53F7", "\u540D\u79F0", "\u7B80\u79F0", "\u5730\u533A", "\u80DC\u7387"};
+        private final String[] columns = {"编号", "名称", "简称", "地区", "胜率"};
         private List<Team> teams = new ArrayList<>();
 
         TeamMgmtTableModel(List<Team> teams) { this.teams = new ArrayList<>(teams); }

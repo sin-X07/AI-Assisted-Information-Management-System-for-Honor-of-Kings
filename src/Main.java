@@ -1,21 +1,35 @@
+﻿import db.DatabaseManager;
 import model.Equipment;
 import model.Hero;
 import model.Person;
 import model.Team;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import service.AuthenticationService;
 import service.FileStorageService;
 import service.GameDataManager;
+import service.OperationLogService;
 import service.RankingService;
 import util.InputHelper;
 
 public class Main {
+    private static final Logger log = LoggerFactory.getLogger(Main.class);
+
     private static final InputHelper inputHelper = new InputHelper();
     private static final AuthenticationService authenticationService = new AuthenticationService();
     private static final GameDataManager gameDataManager = new GameDataManager();
     private static final RankingService rankingService = new RankingService();
     private static final FileStorageService fileStorageService = new FileStorageService();
+    private static final OperationLogService opLogService = OperationLogService.getInstance();
 
     public static void main(String[] args) {
+        // Initialize database
+        DatabaseManager.getInstance().initialize();
+        log.info("Database initialized.");
+
+        // Seed initial game data if database was empty
+        gameDataManager.persistAllToDatabase();
+
         System.out.println("欢迎使用 AI 辅助的《王者荣耀》信息管理系统");
         while (true) {
             Person currentUser = loginLoop();
@@ -34,6 +48,7 @@ public class Main {
             Person user = authenticationService.login(username, password);
             if (user != null) {
                 System.out.println("登录成功，欢迎" + user.getNickname() + "！");
+                log.info("User [{}] logged in successfully.", user.getNickname());
                 return user;
             }
             System.out.println("用户名或密码错误，或账号状态不可用，请重试。");
@@ -55,11 +70,12 @@ public class Main {
                 case 6: searchTeam(); break;
                 case 7: queryPlayerDetails(); break;
                 case 8: showPlayerRanking(); break;
-                case 9: dataManagementMenu(); break;
-                case 10: exportRanking(); break;
+                case 9: dataManagementMenu(currentUser); break;
+                case 10: exportRanking(currentUser); break;
                 case 0:
                     loggedIn = false;
                     System.out.println("已退出当前账号。");
+                    log.info("User [{}] logged out.", currentUser.getNickname());
                     break;
                 default:
                     System.out.println("未知选项，请重新选择。");
@@ -85,7 +101,7 @@ public class Main {
         System.out.println("0. 退出登录");
     }
 
-    private static void dataManagementMenu() {
+    private static void dataManagementMenu(Person currentUser) {
         while (true) {
             System.out.println();
             System.out.println("===== 数据管理（增删改） =====");
@@ -95,26 +111,29 @@ public class Main {
             System.out.println("0. 返回主菜单");
             int choice = inputHelper.readIntInRange("请选择操作：", 0, 9);
             switch (choice) {
-                case 1: addHero(); break;
-                case 2: addEquipment(); break;
-                case 3: addTeam(); break;
-                case 4: removeHero(); break;
-                case 5: removeEquipment(); break;
-                case 6: removeTeam(); break;
-                case 7: updateHero(); break;
-                case 8: updateEquipment(); break;
-                case 9: updateTeam(); break;
+                case 1: addHero(currentUser); break;
+                case 2: addEquipment(currentUser); break;
+                case 3: addTeam(currentUser); break;
+                case 4: removeHero(currentUser); break;
+                case 5: removeEquipment(currentUser); break;
+                case 6: removeTeam(currentUser); break;
+                case 7: updateHero(currentUser); break;
+                case 8: updateEquipment(currentUser); break;
+                case 9: updateTeam(currentUser); break;
                 case 0: return;
             }
         }
     }
 
-    private static void addHero() {
+    // ========== Admin CRUD operations with logging ==========
+
+    private static void addHero(Person admin) {
         System.out.println();
         System.out.println("----- 添加英雄 -----");
         String heroId = inputHelper.readRequiredString("英雄编号：");
         if (gameDataManager.findHeroById(heroId) != null) {
             System.out.println("该编号已存在，添加失败。");
+            opLogService.logFailure(admin, "ADD", "HERO", heroId, "添加英雄失败: 编号已存在");
             return;
         }
         String heroName = inputHelper.readRequiredString("英雄名称：");
@@ -124,14 +143,16 @@ public class Main {
         Hero hero = new Hero(heroId, heroName, title, position, heroType);
         gameDataManager.addHero(hero);
         System.out.println("英雄 [" + heroName + "] 添加成功。");
+        opLogService.logSuccess(admin, "ADD", "HERO", heroId, "添加英雄: " + heroName);
     }
 
-    private static void addEquipment() {
+    private static void addEquipment(Person admin) {
         System.out.println();
         System.out.println("----- 添加装备 -----");
         String eqId = inputHelper.readRequiredString("装备编号：");
         if (gameDataManager.findEquipmentById(eqId) != null) {
             System.out.println("该编号已存在，添加失败。");
+            opLogService.logFailure(admin, "ADD", "EQUIPMENT", eqId, "添加装备失败: 编号已存在");
             return;
         }
         String eqName = inputHelper.readRequiredString("装备名称：");
@@ -140,14 +161,16 @@ public class Main {
         Equipment eq = new Equipment(eqId, eqName, eqType, price);
         gameDataManager.addEquipment(eq);
         System.out.println("装备 [" + eqName + "] 添加成功。");
+        opLogService.logSuccess(admin, "ADD", "EQUIPMENT", eqId, "添加装备: " + eqName);
     }
 
-    private static void addTeam() {
+    private static void addTeam(Person admin) {
         System.out.println();
         System.out.println("----- 添加战队 -----");
         String teamId = inputHelper.readRequiredString("战队编号：");
         if (gameDataManager.findTeamById(teamId) != null) {
             System.out.println("该编号已存在，添加失败。");
+            opLogService.logFailure(admin, "ADD", "TEAM", teamId, "添加战队失败: 编号已存在");
             return;
         }
         String teamName = inputHelper.readRequiredString("战队名称：");
@@ -156,39 +179,59 @@ public class Main {
         Team team = new Team(teamId, teamName, shortName, region);
         gameDataManager.addTeam(team);
         System.out.println("战队 [" + teamName + "] 添加成功。");
+        opLogService.logSuccess(admin, "ADD", "TEAM", teamId, "添加战队: " + teamName);
     }
 
-    private static void removeHero() {
+    private static void removeHero(Person admin) {
         System.out.println();
         System.out.println("----- 删除英雄 -----");
         String id = inputHelper.readRequiredString("请输入要删除的英雄编号：");
         boolean ok = gameDataManager.removeHeroById(id);
-        System.out.println(ok ? "删除成功。" : "未找到编号为 " + id + " 的英雄。");
+        if (ok) {
+            System.out.println("删除成功。");
+            opLogService.logSuccess(admin, "DELETE", "HERO", id, "删除英雄 ID: " + id);
+        } else {
+            System.out.println("未找到编号为 " + id + " 的英雄。");
+            opLogService.logFailure(admin, "DELETE", "HERO", id, "删除英雄失败: 未找到编号 " + id);
+        }
     }
 
-    private static void removeEquipment() {
+    private static void removeEquipment(Person admin) {
         System.out.println();
         System.out.println("----- 删除装备 -----");
         String id = inputHelper.readRequiredString("请输入要删除的装备编号：");
         boolean ok = gameDataManager.removeEquipmentById(id);
-        System.out.println(ok ? "删除成功。" : "未找到编号为 " + id + " 的装备。");
+        if (ok) {
+            System.out.println("删除成功。");
+            opLogService.logSuccess(admin, "DELETE", "EQUIPMENT", id, "删除装备 ID: " + id);
+        } else {
+            System.out.println("未找到编号为 " + id + " 的装备。");
+            opLogService.logFailure(admin, "DELETE", "EQUIPMENT", id, "删除装备失败: 未找到编号 " + id);
+        }
     }
 
-    private static void removeTeam() {
+    private static void removeTeam(Person admin) {
         System.out.println();
         System.out.println("----- 删除战队 -----");
         String id = inputHelper.readRequiredString("请输入要删除的战队编号：");
         boolean ok = gameDataManager.removeTeamById(id);
-        System.out.println(ok ? "删除成功。" : "未找到编号为 " + id + " 的战队。");
+        if (ok) {
+            System.out.println("删除成功。");
+            opLogService.logSuccess(admin, "DELETE", "TEAM", id, "删除战队 ID: " + id);
+        } else {
+            System.out.println("未找到编号为 " + id + " 的战队。");
+            opLogService.logFailure(admin, "DELETE", "TEAM", id, "删除战队失败: 未找到编号 " + id);
+        }
     }
 
-    private static void updateHero() {
+    private static void updateHero(Person admin) {
         System.out.println();
         System.out.println("----- 更新英雄 -----");
         String id = inputHelper.readRequiredString("请输入要更新的英雄编号：");
         Hero old = gameDataManager.findHeroById(id);
         if (old == null) {
             System.out.println("未找到编号为 " + id + " 的英雄。");
+            opLogService.logFailure(admin, "UPDATE", "HERO", id, "更新英雄失败: 未找到编号 " + id);
             return;
         }
         System.out.println("（直接回车保留原值）");
@@ -212,15 +255,21 @@ public class Main {
 
         boolean ok = gameDataManager.updateHero(updated);
         System.out.println(ok ? "更新成功。" : "更新失败。");
+        if (ok) {
+            opLogService.logSuccess(admin, "UPDATE", "HERO", id, "更新英雄: " + name);
+        } else {
+            opLogService.logFailure(admin, "UPDATE", "HERO", id, "更新英雄失败");
+        }
     }
 
-    private static void updateEquipment() {
+    private static void updateEquipment(Person admin) {
         System.out.println();
         System.out.println("----- 更新装备 -----");
         String id = inputHelper.readRequiredString("请输入要更新的装备编号：");
         Equipment old = gameDataManager.findEquipmentById(id);
         if (old == null) {
             System.out.println("未找到编号为 " + id + " 的装备。");
+            opLogService.logFailure(admin, "UPDATE", "EQUIPMENT", id, "更新装备失败: 未找到编号 " + id);
             return;
         }
         System.out.println("（直接回车保留原值）");
@@ -240,15 +289,21 @@ public class Main {
 
         boolean ok = gameDataManager.updateEquipment(updated);
         System.out.println(ok ? "更新成功。" : "更新失败。");
+        if (ok) {
+            opLogService.logSuccess(admin, "UPDATE", "EQUIPMENT", id, "更新装备: " + name);
+        } else {
+            opLogService.logFailure(admin, "UPDATE", "EQUIPMENT", id, "更新装备失败");
+        }
     }
 
-    private static void updateTeam() {
+    private static void updateTeam(Person admin) {
         System.out.println();
         System.out.println("----- 更新战队 -----");
         String id = inputHelper.readRequiredString("请输入要更新的战队编号：");
         Team old = gameDataManager.findTeamById(id);
         if (old == null) {
             System.out.println("未找到编号为 " + id + " 的战队。");
+            opLogService.logFailure(admin, "UPDATE", "TEAM", id, "更新战队失败: 未找到编号 " + id);
             return;
         }
         System.out.println("（直接回车保留原值）");
@@ -270,7 +325,14 @@ public class Main {
 
         boolean ok = gameDataManager.updateTeam(updated);
         System.out.println(ok ? "更新成功。" : "更新失败。");
+        if (ok) {
+            opLogService.logSuccess(admin, "UPDATE", "TEAM", id, "更新战队: " + name);
+        } else {
+            opLogService.logFailure(admin, "UPDATE", "TEAM", id, "更新战队失败");
+        }
     }
+
+    // ========== Non-admin operations (unchanged) ==========
 
     private static void queryPlayerDetails() {
         System.out.println();
@@ -286,11 +348,12 @@ public class Main {
         rankingService.displayTopPlayers(gameDataManager, topN);
     }
 
-    private static void exportRanking() {
+    private static void exportRanking(Person admin) {
         System.out.println();
         System.out.println("===== 导出排行榜到文件 =====");
         String filePath = inputHelper.readRequiredString("请输入文件路径（如 ranking.txt）：");
         fileStorageService.exportRankingToFile(gameDataManager, filePath);
+        opLogService.logSuccess(admin, "EXPORT", "RANKING", "", "导出排行榜到 " + filePath);
     }
 
     private static String inputLineWithDefault(String prompt, String defaultValue) {
