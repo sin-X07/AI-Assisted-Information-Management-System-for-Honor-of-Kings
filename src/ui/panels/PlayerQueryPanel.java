@@ -32,10 +32,14 @@ public class PlayerQueryPanel extends JPanel {
         JButton searchBtn = new JButton("查询");
         searchBtn.addActionListener(e -> doSearch());
         topPanel.add(searchBtn);
-
-        searchField.addActionListener(e -> doSearch());
-
-        add(topPanel, BorderLayout.NORTH);
+        JButton refreshBtn = new JButton("刷新");
+        refreshBtn.addActionListener(e -> {
+            String kw = searchField.getText().trim();
+            if (!kw.isEmpty()) { doSearch(); } else {
+                resultPanel.removeAll(); resultPanel.revalidate(); resultPanel.repaint();
+            }
+        });
+        topPanel.add(refreshBtn);
     }
 
     private void initResultArea() {
@@ -203,5 +207,19 @@ public class PlayerQueryPanel extends JPanel {
         label.setFont(new Font("Microsoft YaHei", Font.PLAIN, 12));
         label.setAlignmentX(Component.LEFT_ALIGNMENT);
         panel.add(label);
+    }
+
+    public void refreshFromDataManager() {
+        searchField.setText("");
+        resultPanel.removeAll();
+        resultPanel.revalidate();
+        resultPanel.repaint();
+    }
+
+    public void redoSearch() {
+        String kw = searchField.getText().trim();
+        if (!kw.isEmpty()) {
+            doSearch();
+        }
     }
 }

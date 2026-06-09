@@ -36,6 +36,9 @@ public class RankingPanel extends JPanel {
         topPanel.add(topNSpinner);
 
         topPanel.add(new JLabel("\u540D"));
+        JButton refreshBtn = new JButton("刷新");
+        refreshBtn.addActionListener(e -> refreshData());
+        topPanel.add(refreshBtn);
         add(topPanel, BorderLayout.NORTH);
     }
 

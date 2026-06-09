@@ -45,6 +45,9 @@ public class EquipmentPanel extends JPanel {
         typeFilter = new JComboBox<>(TYPES);
         typeFilter.addActionListener(e -> applyFilter());
         topPanel.add(typeFilter);
+        JButton refreshBtn = new JButton("刷新");
+        refreshBtn.addActionListener(e -> refreshData());
+        topPanel.add(refreshBtn);
 
         add(topPanel, BorderLayout.NORTH);
     }

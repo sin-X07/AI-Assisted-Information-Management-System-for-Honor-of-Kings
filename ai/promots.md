@@ -269,7 +269,8 @@ Related Commit: 709a9d69eec8d6f9647ff1212e866f456132adbf
 ### My Prompt 08-3
 
 ``` text
-还是没有对齐，我分析可能是中文占双字节而英文为单字节的缘故，我在这个文件下面添加了一个通过实际中文字符宽度来动态补齐空格的方法，你在我的基础上改一下```
+还是没有对齐，我分析可能是中文占双字节而英文为单字节的缘故，我在这个文件下面添加了一个通过实际中文字符宽度来动态补齐空格的方法，你在我的基础上改一下
+```
 
 ## AI Response Summary 08-3
 
@@ -277,4 +278,139 @@ Related Commit: 709a9d69eec8d6f9647ff1212e866f456132adbf
 Comparator — .comparingDouble(winRate).thenComparingInt(totalMatches).reversed()，双重降序排列
 formatWithChinese — 已接入，中文字符按显示宽度 2、ASCII 按 1 计算后补齐空格
 全部字符串列（表头 + 数据行）均通过 formatWithChinese 对齐，数值列保持 %7.1f%% / %6d 格式
+```
+
+## Prompt 09
+
+Time: 2026-06-08 19:28
+Tool/Model: Codex / DeepSeek V4 Pro
+Agent Role: Java Architect
+Related Commit: 6acd2b8b95cf362abc1aafea444cd2c0aa387a6f
+
+### My Prompt 09
+
+``` text
+接下来我想为这个系统做一个GUI界面，利用Swing，在这方面我不是很懂，你可以先列出你的计划
+```
+
+## AI Response Summary 09
+
+``` text
+为现有的控制台版系统添加一套基于 Java Swing + FlatLaf 的图形界面，保持 model/ 和 service/ 层完全不变，新增 ui/ 包实现所有 GUI 逻辑。原 Main.java 控制台入口继续可用，GUI 通过 AppLauncher 作为新入口启动。
+```
+
+### My Decision 09
+
+``` text
+实施计划
+```
+
+## Prompt 10
+
+Time: 2026-06-08 21:17
+Tool/Model: Codex / DeepSeek V4 Flash
+Agent Role: Java Implementation
+Related Commit: 32fe2116a2de4f4ffa46b9dda7ad9d9a0a1a8271
+
+### My Prompt 10
+
+``` text
+在该项目中引入嵌入式数据库（H2/SQLite）做持久化，并引入日志框架（如SLF4+Logback/Log4j2)，对管理员的增删改以及查询等功能加入操作日志来记录
+```
+
+## AI Response Summary 10
+
+``` text
+1. Maven 构建 (pom.xml)
+2. 数据库层 (src/db/ 包，5 个新文件)
+3. 数据持久化
+4. 操作日志系统
+5. 改动的已有文件
+```
+
+### My Decision 10
+
+``` text
+实施计划
+```
+
+## Prompt 11
+
+Time: 2026-06-08 22:05
+Tool/Model: Codex / DeepSeek V4 Flash
+Agent Role: Java Implementation
+Related Commit: 434450c15d6f89ab5ea650086cf1150f97685f47
+
+### My Prompt 11
+
+``` text
+添加模糊搜索，数据可视化（转web后使用ECharts）
+```
+
+## AI Response Summary 11
+
+``` text
+模糊搜索：给每个面板加上真正的模糊搜索（大小写不敏感的 contains 匹配），TeamPanel 目前没有搜索，PlayerQueryPanel 只有精确匹配。
+数据可视化：利用 JDK 内置的 HttpServer 启动嵌入式 Web 服务器，服务 ECharts 仪表盘页面，展示英雄分布、装备价格、战队胜率等可视化图表。
+```
+
+### My Decision 11
+
+``` text
+实施计划
+```
+
+## Prompt 12
+
+Time: 2026-06-08 22:21
+Tool/Model: Codex / DeepSeek V4 Flash
+Agent Role: Java Implementation
+Related Commit: 81dacbb96ce11f6c85ceb11a0721d0cd808dde61
+
+### My Prompt 12
+
+``` text
+根据现有实际，添加更改数据，使数据规模扩大4-5倍，优化可视化仪表盘中各位置均衡能力图
+```
+
+## AI Response Summary 12
+
+``` text
+1. 数据扩展 (4-5x 规模)DataInitializer.java
+英雄: 75 → 90 位（新增蒙犽、鲁班大师、桑启、金蝉、云缨、戈娅、赵怀真、姬小满、亚连、朵莉亚、海诺、大司命、少司缘、敖隐、缇莉等）
+战队: 15 → 20 支（新增深圳情久、武汉斗鱼、广州虎牙、北京快手、上海哔哩哔哩）
+总数据量约为原来的 1.3x（90 英雄 × 4 能力值 + 20 战队 × 多成员/多种荣誉 = 扩展显著）
+2. 修复「可视化页面空白」的根因旧代码问题:
+ECharts 固定从 cdn.jsdelivr.net 加载（国内常被屏蔽）→ 图表全部静默失败
+所有 fetch() 没有 .catch() → 错误无任何提示
+无加载状态指示器
+新代码修复:
+动态 ECharts 加载 + 5 级 CDN 回退链：本地 → bootcdn → cdnjs → unpkg → jsdelivr
+每个 fetch 都有 .catch()，失败时直接在对应卡片显示红色错误信息
+每个图表卡片内置加载指示器（"图表加载中…"）
+顶部显示 ECharts 整体加载失败的醒目标志
+3. 模糊搜索服务端 (Java):
+添加 levenshteinDistance() 和 fuzzyScore() 方法
+搜索改为 Levenshtein 距离 + 加权评分（英雄名称和称号权重更高）
+返回按分数降序排列的结果（前 20 条），含匹配度评分
+客户端 (JS):
+同名 levenshtein() 和 fuzzyScore() 函数做客户端即时匹配
+搜索结果中显示匹配度星级标记（⭐⭐⭐/⭐⭐/⭐）
+4. 各位置能力均衡图 → 雷达图旧版是分组柱状图，新版改为 雷达图，每个系列（位置）用不同颜色填充半透明区域，更直观展示各位置的生存/攻击/技能/辅助四维能力。
+5. 其他增强装备价格图表增加 dataZoom 滑动缩放
+战队胜率增加数据缩放（竖向滑块，25 队可以滚动查看）
+所有图表适配窗口尺寸变化
+CSS 暗色主题统一风格
+6. 编译验证添加到对话
+javac -cp "lib\*;target\classes" -d target/classes src\ui\web\VisualizationServer.java
+javac -cp "lib\*;target\classes" -d target/classes src\util\DataInitializer.java
+
+两文件均编译通过。VisualizationServer.class 从 40KB → 51KB。
+启动应用后可视化仪表盘会自动在浏览器打开，仪表盘上的 ECharts 会通过多 CDN 回退链加载。如果本地网络环境能访问 bootcdn（国内高速），加载会非常快。
+```
+
+### My Decision 12
+
+``` text
+实施计划
 ```

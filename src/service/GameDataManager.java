@@ -42,9 +42,10 @@ public class GameDataManager implements Searchable {
      */
     private void loadDataFromDatabase() {
         List<Hero> dbHeroes = gameDataDao.findAllHeroes();
+
         if (dbHeroes.isEmpty()) {
             heroes.addAll(DataInitializer.initializeHeroes());
-            log.info("No heroes found in DB, loaded {} from initializer.", heroes.size());
+            log.info("No heroes found in DB, loaded {} from initializer.", DataInitializer.initializeHeroes().size());
         } else {
             heroes.addAll(dbHeroes);
             log.info("Loaded {} heroes from database.", dbHeroes.size());
@@ -53,7 +54,7 @@ public class GameDataManager implements Searchable {
         List<Equipment> dbEquips = gameDataDao.findAllEquipments();
         if (dbEquips.isEmpty()) {
             equipments.addAll(DataInitializer.initializeEquipments());
-            log.info("No equipments found in DB, loaded {} from initializer.", equipments.size());
+            log.info("No equipments found in DB, loaded {} from initializer.", DataInitializer.initializeEquipments().size());
         } else {
             equipments.addAll(dbEquips);
             log.info("Loaded {} equipments from database.", dbEquips.size());
@@ -62,7 +63,7 @@ public class GameDataManager implements Searchable {
         List<Team> dbTeams = gameDataDao.findAllTeams();
         if (dbTeams.isEmpty()) {
             teams.addAll(DataInitializer.initializeTeams());
-            log.info("No teams found in DB, loaded {} from initializer.", teams.size());
+            log.info("No teams found in DB, loaded {} from initializer.", DataInitializer.initializeTeams().size());
         } else {
             teams.addAll(dbTeams);
             log.info("Loaded {} teams from database.", dbTeams.size());
@@ -373,7 +374,7 @@ public class GameDataManager implements Searchable {
         if (records == null || records.isEmpty()) return 0;
         long wins = 0;
         for (MatchRecord record : records) {
-            if ("胜利".equals(record.getResult())) wins++;
+            if ("鑳滃埄".equals(record.getResult())) wins++;
         }
         return wins;
     }
@@ -381,7 +382,7 @@ public class GameDataManager implements Searchable {
     @Override
     public void displayPlayerDetails(String id) {
         if (id == null) {
-            System.out.println("玩家ID或昵称不能为空。");
+            System.out.println("锟斤拷锟絀D锟斤拷锟角称诧拷锟斤拷为锟秸★拷");
             return;
         }
 
@@ -401,7 +402,7 @@ public class GameDataManager implements Searchable {
 
         Player displayPlayer = realPlayer != null ? realPlayer : plainPlayer;
         if (displayPlayer == null) {
-            System.out.println("未找到ID或昵称为 " + id + " 的玩家。");
+            System.out.println("未找到ID或名称为 " + id + " 的用户。");
             return;
         }
 
@@ -414,17 +415,17 @@ public class GameDataManager implements Searchable {
             }
         }
 
-        System.out.println("===== 玩家详细信息 =====");
-        System.out.println("玩家ID: " + displayPlayer.getId());
-        System.out.println("昵称: " + displayPlayer.getNickname());
+        System.out.println("===== 锟斤拷锟斤拷锟较革拷锟较?=====");
+        System.out.println("锟斤拷锟絀D: " + displayPlayer.getId());
+        System.out.println("锟角筹拷: " + displayPlayer.getNickname());
 
         if (playerTeam != null) {
-            System.out.println("所属战队: " + playerTeam.getTeamName()
+            System.out.println("锟斤拷锟斤拷战璐? " + playerTeam.getTeamName()
                     + " (" + playerTeam.getShortName() + ")");
-            System.out.println("战队区域: " + playerTeam.getRegion());
-            System.out.println("教练: " + playerTeam.getCoachName());
-            System.out.println("队长: " + playerTeam.getCaptainName());
-            System.out.println("战队胜率: "
+            System.out.println("战锟斤拷锟斤拷璐? " + playerTeam.getRegion());
+            System.out.println("锟斤拷璐? " + playerTeam.getCoachName());
+            System.out.println("锟接筹拷: " + playerTeam.getCaptainName());
+            System.out.println("瀵规垬璁板綍: "
                     + String.format("%.1f%%", playerTeam.getWinRate() * 100));
 
             if (realPlayer != null) {
@@ -433,71 +434,73 @@ public class GameDataManager implements Searchable {
                 long wins = countWins(realPlayer);
                 long losses = totalMatches - wins;
 
-                System.out.println("\n----- 个人战绩 -----");
-                System.out.println("总场次: " + totalMatches);
-                System.out.println("胜率: " + String.format("%.1f%%", winRate * 100));
-                System.out.println("胜: " + wins + " | 负: " + losses);
+                System.out.println("\n----- 锟斤拷锟斤拷战锟斤拷 -----");
+                System.out.println("锟杰筹拷璐? " + totalMatches);
+                System.out.println("鑳滅巼: " + String.format("%.1f%%", winRate * 100));
+                System.out.println("鑳? " + wins + " | 璐? " + losses);
 
                 List<MatchRecord> records = realPlayer.getMatchOverviews();
                 if (records != null && !records.isEmpty()) {
-                    System.out.println("\n----- 对局记录摘要 -----");
+                    System.out.println("\n----- 锟皆局硷拷录摘要 -----");
                     int showCount = Math.min(5, records.size());
                     for (int i = 0; i < showCount; i++) {
                         MatchRecord record = records.get(i);
-                        System.out.println("  对局" + (i + 1) + ": "
+                        System.out.println("  锟皆撅拷" + (i + 1) + ": "
                                 + record.getMatchId()
                                 + " | " + record.getMatchMode()
                                 + " | " + record.getResult()
-                                + " | 时长: " + record.getDurationSeconds() + "秒"
-                                + " | 时间: " + record.getMatchTime());
+                                + " | 时璐? " + record.getDurationSeconds() + "锟斤拷"
+                                + " | 时璐? " + record.getMatchTime());
                     }
                     if (records.size() > 5) {
-                        System.out.println("  ... (共" + records.size() + "场对局)");
+                        System.out.println("  ... (锟斤拷" + records.size() + "锟斤拷锟皆撅拷)");
                     }
                 }
             } else {
-                System.out.println("\n----- 个人战绩 -----");
-                System.out.println("（该玩家暂无详细战绩数据）");
+                System.out.println("\n----- 锟斤拷锟斤拷战锟斤拷 -----");
+                System.out.println("该玩家暂无详细比赛数据。");
             }
 
-            System.out.println("\n----- 战队常用英雄 -----");
+            System.out.println("\n----- 战锟接筹拷锟斤拷英锟斤拷 -----");
             for (String heroName : playerTeam.getMainHeroes()) {
                 Hero hero = findHeroByName(heroName);
                 if (hero != null) {
                     System.out.println("  " + hero.getHeroName()
                             + " [" + hero.getTitle() + "]");
-                    System.out.println("    定位: " + hero.getPosition()
-                            + " | 类型: " + hero.getHeroType());
-                    System.out.println("    技能: " + hero.getPassiveSkill()
+                    System.out.println("    锟斤拷位: " + hero.getPosition()
+                            + " | 锟斤拷璐? " + hero.getHeroType());
+                    System.out.println("    锟斤拷璐? " + hero.getPassiveSkill()
                             + " / " + hero.getSkillOne()
                             + " / " + hero.getSkillTwo()
                             + " / " + hero.getSkillThree());
-                    System.out.println("    能力: 生存" + hero.getSurvivalAbility()
-                            + " | 攻击" + hero.getAttackAbility()
-                            + " | 技能" + hero.getSkillAbility()
-                            + " | 辅助" + hero.getSupportAbility()
-                            + " | 难度: " + hero.getDifficulty());
+                    System.out.println("    锟斤拷璐? 锟斤拷锟斤拷" + hero.getSurvivalAbility()
+                            + " | 锟斤拷锟斤拷" + hero.getAttackAbility()
+                            + " | 锟斤拷锟斤拷" + hero.getSkillAbility()
+                            + " | 锟斤拷锟斤拷" + hero.getSupportAbility()
+                            + " | 锟窖讹拷: " + hero.getDifficulty());
 
                     if (!hero.getRecommendedEquipmentIds().isEmpty()) {
-                        System.out.println("    推荐装备:");
+                        System.out.println("    锟狡硷拷装锟斤拷:");
                         for (String eqId : hero.getRecommendedEquipmentIds()) {
                             Equipment eq = findEquipmentById(eqId);
                             if (eq != null) {
                                 System.out.println("      " + eq.getEquipmentName()
                                         + " (" + eq.getEquipmentType()
-                                        + ", " + eq.getPrice() + "金币)");
+                                        + ", " + eq.getPrice() + "锟斤拷锟?");
                             }
                         }
                     }
                 }
             }
 
-            System.out.println("\n战队荣誉: "
+            System.out.println("\n战锟斤拷锟斤拷璐? "
                     + String.join(", ", playerTeam.getHonors()));
         } else {
-            System.out.println("（该玩家未加入任何战队）");
+            System.out.println("该玩家目前不属于任何战队。");
         }
 
         System.out.println("========================");
     }
 }
+
+

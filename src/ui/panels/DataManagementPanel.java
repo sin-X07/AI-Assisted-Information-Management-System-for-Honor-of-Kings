@@ -59,6 +59,10 @@ public class DataManagementPanel extends JPanel {
         btnPanel.add(addBtn);
         btnPanel.add(editBtn);
         btnPanel.add(deleteBtn);
+        JButton refreshListBtn = new JButton("刷新列表");
+        refreshListBtn.addActionListener(e -> refreshData());
+        btnPanel.add(refreshListBtn);
+
         panel.add(btnPanel, BorderLayout.NORTH);
 
         heroMgmtModel = new HeroMgmtTableModel(mainFrame.getDataManager().getHeroes());
@@ -140,6 +144,10 @@ public class DataManagementPanel extends JPanel {
         btnPanel.add(addBtn);
         btnPanel.add(editBtn);
         btnPanel.add(deleteBtn);
+        JButton refreshListBtn = new JButton("刷新列表");
+        refreshListBtn.addActionListener(e -> refreshData());
+        btnPanel.add(refreshListBtn);
+
         panel.add(btnPanel, BorderLayout.NORTH);
 
         equipMgmtModel = new EquipMgmtTableModel(mainFrame.getDataManager().getEquipments());
@@ -221,6 +229,10 @@ public class DataManagementPanel extends JPanel {
         btnPanel.add(addBtn);
         btnPanel.add(editBtn);
         btnPanel.add(deleteBtn);
+        JButton refreshListBtn = new JButton("刷新列表");
+        refreshListBtn.addActionListener(e -> refreshData());
+        btnPanel.add(refreshListBtn);
+
         panel.add(btnPanel, BorderLayout.NORTH);
 
         teamMgmtModel = new TeamMgmtTableModel(mainFrame.getDataManager().getTeams());

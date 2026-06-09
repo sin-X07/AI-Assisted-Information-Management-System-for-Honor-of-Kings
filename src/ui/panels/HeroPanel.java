@@ -37,6 +37,9 @@ public class HeroPanel extends JPanel {
             public void changedUpdate(javax.swing.event.DocumentEvent e) { filterByKeyword(); }
         });
         topPanel.add(searchField);
+        JButton refreshBtn = new JButton("刷新");
+        refreshBtn.addActionListener(e -> refreshData());
+        topPanel.add(refreshBtn);
 
         add(topPanel, BorderLayout.NORTH);
     }
