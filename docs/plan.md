@@ -109,7 +109,7 @@
 
 ## 10. 测试计划
 
-### 我将手动测试并记录至少 10 个核心业务场景，主要测试用例规划如下
+### 我将测试并记录至少 10 个核心业务场景，主要测试用例规划如下
 
 - TC-01 登录越权测试：使用 Player 账户登录，尝试通过硬编码指令触发 Admin 专属的“删除英雄”功能，预期系统给出拒绝访问警告。  
 - TC-02 玩家精确查询：输入存在的玩家名（如 "Li Bai"），预期正确级联打印战队、英雄以及英雄脚下的装备。  
@@ -125,6 +125,93 @@
 
 ### 风险 2：由于合并或者忘记提交，导致最后导出的 Git Commit 数量少于 12 个或缺乏 AI 标签
 
-### 应对方案：养成良好的开发习惯，每写完/由 AI 辅助重构完一个独立的方法，通过控制台验证无误后，立刻执行 git commit。并在电脑旁张贴前缀便利贴提醒自己（如 [AI-Implementation]）
+### 应对方案：养成良好的开发习惯，每写完/由 AI 辅助重构完一个独立的方法，通过控制台验证无误后，立刻执行 git commit
 
 ## 12. 最终反思
+
+---
+
+## 13. 最终实现回顾（v2.0.0 追加）
+
+### 13.1 项目演变：从控制台到双模式
+
+原始 plan.md 规划了一个纯控制台应用，实际项目在 v1.0 控制台版本完成后经历了重大扩展：
+
+| 规划项 | 原始计划 | 最终实现 | 差异 |
+|--------|----------|----------|------|
+
+| 构建方式 | 纯 JDK 编译 | Maven + shade 插件 | 增加依赖管理 |
+| 界面模式 | 仅控制台 | 控制台 + Swing GUI + Web | 大幅扩展 |
+| 持久化 | 文件 I/O (CSV) | SQLite 数据库 (5 张表) | 更可靠 |
+| 依赖 | 零第三方依赖 | SQLite + SLF4J + FlatLaf | 增加外部依赖 |
+| 数据量 | 10 玩家/15 英雄/20 装备/10 对局 | 70+ 玩家/90 英雄/88 装备/1200+ 对局 | 远超规划 |
+| 认证 | Map<String, Person> 内存存储 | SQLite 持久化 + 内存缓存 | 更健壮 |
+| 日志 | 未规划 | OperationLogService (SQLite+SLF4J 双写) | 新增 |
+| 可视化 | 未规划 | ECharts Web 仪表盘 (8 API 端点) | 新增 |
+| 构建配置 | 无 | pom.xml + logback.xml | 新增 |
+
+### 13.2 最终实际采用的架构
+
+```structure
+src/
+├── Main.java               # 控制台入口（原规划保留）
+├── model/ 8 个实体类       # 符合原规划
+├── service/ 6 个类         # 增加 OperationLogService
+├── db/ 5 个类              # 新增 SQLite DAO 层
+├── util/ 3 个类            # 增加 DbQuickCheck
+└── ui/                     # 新增 GUI 层
+    ├── AppLauncher.java    # GUI 入口
+    ├── LoginDialog.java    # 登录对话框
+    ├── MainFrame.java      # 主框架
+    ├── panels/ 7 个面板     # Welcome/Hero/Equipment/Team/PlayerQuery/Ranking/DataManagement
+    ├── dialogs/ 6 个对话框  # Hero/Equipment/Team 的 Detail + Edit
+    └── web/                # VisualizationServer + dashboard.html
+```
+
+### 13.3 与原计划的主要差异
+
+**接口设计**: 原计划 `Searchable` 接口包含 `searchById` / `searchByName` 两个方法；实际实现扩展为 20 个方法，覆盖全部 CRUD 操作。
+
+**枚举 (Enum) 使用**: 原计划定义 `HeroType` / `MatchResult` / `UserRole` 枚举；实际实现中角色使用 `String` 类型（"ADMIN"/"PLAYER"），英雄类型和定位使用 `String` 字段。
+
+**文件 I/O**: 原计划 CSV 格式导入导出；实际实现为 `\t` 分隔的 UTF-8 文件导出，未实现 CSV 导入。
+
+**数据持久化**: 原计划程序退出时保存、启动时加载文件；实际实现为 SQLite 数据库实时持久化，`persistAllToDatabase()` 在程序启动时同步。
+
+**UI 层**: 原计划仅控制台菜单；实际增加 Swing GUI 和 Web 可视化两套界面。
+
+### 13.4 AI 使用实际记录
+
+项目共使用 Codex (GPT-5) 进行了 13+ 轮提示词往返（记录在 `ai/promots.md`）：
+
+- **Architect Agent (架构师)**: 评审类图设计、接口划分、数据初始化方案
+- **Implementation Agent (实现者)**: 生成方法级代码、Comparator 实现、DAO 层代码、GUI 面板框架
+- **Testing/Reviewer Agent (审查者)**: 扫描逻辑漏洞、编写测试用例、验证边界条件
+
+### 13.5 五个关键架构反思（详见 ai/reflection.md）
+
+1. **模型层解耦**: AI 初始方案将初始化逻辑混入 model → 人工修正为 DataInitializer 独立工厂
+2. **封装保护**: AI 直接暴露内部集合引用 → 人工修正为 `Collections.unmodifiableList` + 浅拷贝
+3. **战绩独立计算**: AI 用战队数据代理个人战绩 → 人工修正为动态遍历 MatchRecord
+4. **防御性编程**: AI 无异常处理 → 人工修正为 InputHelper 全面兜底
+5. **中文排版**: AI 固定 printf 宽度 → 人工修正为 `formatWithChinese()` 动态宽度计算
+
+### 13.6 最终统计数据
+
+| 指标 | 数值 |
+|------|------|
+
+| Java 源文件 | 40+ |
+| 总代码行（约） | 11,700+ |
+| 数据库表 | 5 (admins/heroes/equipments/teams/operation_logs) |
+| 英雄数量 | 90 |
+| 装备数量 | 88 |
+| 战队数量 | 20 |
+| 玩家数量 | 70+ |
+| 对局记录 | 1200+ |
+| 测试用例 | 19 |
+| 提示词往返 | 13+ |
+| 架构反思 | 5+ |
+| GitHub 提交 | 25+ |
+
+---
