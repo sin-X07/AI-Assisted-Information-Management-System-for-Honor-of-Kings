@@ -23,6 +23,8 @@ public class GameDataManager implements Searchable {
     private final List<Equipment> equipments;
     private final List<Team> teams;
     private final List<Player> players;
+    private final List<MatchRecord> matchRecords;
+
     private final GameDataDao gameDataDao;
     private final OperationLogService opLogService;
 
@@ -33,6 +35,7 @@ public class GameDataManager implements Searchable {
         this.equipments = new ArrayList<>();
         this.teams = new ArrayList<>();
         this.players = new ArrayList<>(DataInitializer.initializePlayers());
+        this.matchRecords = new ArrayList<>(DataInitializer.initializeMatchRecords());
 
         loadDataFromDatabase();
     }
@@ -501,6 +504,21 @@ public class GameDataManager implements Searchable {
 
         System.out.println("========================");
     }
+
+    // ===== Match Record operations =====
+
+    public List<MatchRecord> getMatchRecords() {
+        return Collections.unmodifiableList(new ArrayList<>(matchRecords));
+    }
+
+    public MatchRecord findMatchById(String matchId) {
+        if (matchId == null) return null;
+        for (MatchRecord record : matchRecords) {
+            if (matchId.equals(record.getMatchId())) return record;
+        }
+        return null;
+    }
+
 }
 
 

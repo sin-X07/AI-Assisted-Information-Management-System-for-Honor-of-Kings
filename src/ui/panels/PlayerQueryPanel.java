@@ -40,6 +40,8 @@ public class PlayerQueryPanel extends JPanel {
             }
         });
         topPanel.add(refreshBtn);
+
+        add(topPanel, BorderLayout.NORTH);
     }
 
     private void initResultArea() {

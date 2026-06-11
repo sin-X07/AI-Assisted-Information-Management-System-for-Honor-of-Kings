@@ -43,14 +43,14 @@
   .chart { width: 100%; height: 340px; position: relative; }
   .chart canvas.chart-canvas { width: 100%; height: 100%; }
   .chart-loading { display: flex; align-items: center; justify-content: center; height: 340px; color: #556677; font-size: 14px; }
-  .chart-error { display: flex; align-items: center; justify-content: center; height: 340px; color: #e8594e; font-size: 14px; padding: 20px; text-align: center; }
+  .chart-error { display: flex; align-items: center; justify-content: center; height: 340px; color: #556677; font-size: 14px; padding: 20px; text-align: center; }
   .timeout-notice { display: none; text-align: center; padding: 40px 20px; }
   .timeout-notice h2 { color: #c8a84e; margin-bottom: 8px; font-size: 18px; }
   .timeout-notice p { color: #8899aa; font-size: 14px; line-height: 1.6; }
   .timeout-notice .retry-btn { background: #c8a84e; border: none; color: #0f1923; padding: 10px 24px; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: 600; margin-top: 16px; }
   .timeout-notice .retry-btn:hover { background: #d4b85e; }
   .echarts-load-error { display: none; text-align: center; padding: 40px 20px; }
-  .echarts-load-error h2 { color: #e8594e; margin-bottom: 8px; font-size: 18px; }
+  .echarts-load-error h2 { color: #556677; margin-bottom: 8px; font-size: 18px; }
   .echarts-load-error p { color: #8899aa; font-size: 14px; line-height: 1.6; }
   #version-info { font-size: 11px; color: #556677; }
   @media (max-width: 768px) { .charts-grid { grid-template-columns: 1fr; } .header { flex-direction: column; align-items: stretch; } .header-actions { flex-wrap: wrap; } .search-box { min-width: 100%; } .search-results { width: 100%; } }
@@ -60,16 +60,16 @@
 <div class="header">
   <div class="header-left">
     <h1>王者荣耀 · 数据可视化仪表盘</h1>
-    <p id="subtitle">加载中...</p>
+    <p id="subtitle">加载中..</p>
   </div>
   <div class="header-actions">
     <div class="search-wrapper">
       <div class="search-box">
-        <input type="text" id="searchInput" placeholder="模糊搜索英雄名称/技能/定位..." oninput="doSearch(this.value)">
+        <input type="text" id="searchInput" placeholder="模糊搜索英雄名称/技能定位..." oninput="doSearch(this.value)">
       </div>
       <div id="searchResults" class="search-results"></div>
     </div>
-    <button class="refresh-btn" onclick="refreshDashboard()">🔄 刷新数据</button>
+    <button class="refresh-btn" onclick="refreshDashboard()">刷新数据</button>
   </div>
 </div>
 <div class="dashboard">
@@ -92,18 +92,18 @@
     <div class="stat-card"><div class="stat-value" id="statTeams">--</div><div class="stat-label">战队总数</div></div>
   </div>
   <div class="charts-grid">
-    <div class="card"><h2>英雄定位分布 <span class="status-badge">pie</span></h2><div id="chart-position" class="chart"><div class="chart-loading">加载中...</div></div></div>
-    <div class="card"><h2>英雄类型分布 <span class="status-badge">pie</span></h2><div id="chart-type" class="chart"><div class="chart-loading">加载中...</div></div></div>
+    <div class="card"><h2>英雄定位分布 <span class="status-badge">pie</span></h2><div id="chart-position" class="chart"><div class="chart-loading">加载中..</div></div></div>
+    <div class="card"><h2>英雄类型分布 <span class="status-badge">pie</span></h2><div id="chart-type" class="chart"><div class="chart-loading">加载中..</div></div></div>
   </div>
   <div class="charts-grid">
-    <div class="card card-full"><h2>各位置能力均衡图 <span class="status-badge">radar</span></h2><div id="chart-ability" class="chart" style="height:420px"><div class="chart-loading">加载中...</div></div></div>
+    <div class="card card-full"><h2>各位置能力均衡图 <span class="status-badge">radar</span></h2><div id="chart-ability" class="chart" style="height:420px"><div class="chart-loading">加载中..</div></div></div>
   </div>
   <div class="charts-grid">
-    <div class="card"><h2>装备价格统计 <span class="status-badge">bar</span></h2><div id="chart-equip-price" class="chart"><div class="chart-loading">加载中...</div></div></div>
-    <div class="card"><h2>英雄难度分布 <span class="status-badge">bar</span></h2><div id="chart-difficulty" class="chart"><div class="chart-loading">加载中...</div></div></div>
+    <div class="card"><h2>装备价格统计 <span class="status-badge">bar</span></h2><div id="chart-equip-price" class="chart"><div class="chart-loading">加载中..</div></div></div>
+    <div class="card"><h2>英雄难度分布 <span class="status-badge">bar</span></h2><div id="chart-difficulty" class="chart"><div class="chart-loading">加载中..</div></div></div>
   </div>
   <div class="charts-grid">
-    <div class="card card-full"><h2>战队胜率排行 <span class="status-badge">bar</span></h2><div id="chart-team-winrate" class="chart" style="height:420px"><div class="chart-loading">加载中...</div></div></div>
+    <div class="card card-full"><h2>战队胜率排行 <span class="status-badge">bar</span></h2><div id="chart-team-winrate" class="chart" style="height:420px"><div class="chart-loading">加载中..</div></div></div>
   </div>
 </div>
 <script>
@@ -111,6 +111,27 @@ var usingCanvasFallback = false;
 var COLORS = ["#c8a84e","#e8594e","#5abf5a","#4ea8e8","#b48ad8","#f0a030","#e86a8a","#5abfbf","#d4b85e","#6b7c8d","#ff7f50","#98d8c8"];
 var radarColors = ["#c8a84e","#e8594e","#5abf5a","#4ea8e8","#b48ad8","#f0a030","#e86a8a","#5abfbf","#d4b85e","#ff7f50"];
 var dataLoaded = false;
+var refreshGen = 0;
+
+function fetchJSONWithTimeout(url, ms) {
+  return new Promise(function(resolve, reject) {
+    var timer = setTimeout(function() { reject(new Error("请求超时")); }, ms || 15000);
+    fetch(url).then(function(r) {
+      clearTimeout(timer);
+      if (!r.ok) { reject(new Error("HTTP " + r.status)); return; }
+      resolve(r.json());
+    }).catch(function(e) { clearTimeout(timer); reject(e); });
+  });
+}
+function safeFetch(url, id, gen, onSuccess) {
+  return fetchJSONWithTimeout(url, 15000).then(function(d) {
+    if (gen !== refreshGen) return;
+    onSuccess(d);
+  }).catch(function(e) {
+    clearLoading(id);
+    if (gen === refreshGen) showError(id, "加载失败: " + e.message);
+  });
+}
 function escapeHtml(s) {
   if (!s) return '';
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -275,7 +296,7 @@ function showHeroAlert(heroId) {
   fetchJSON('/api/heroes/search?q=' + heroId).then(function(d) {
     if (d.heroes && d.heroes.length > 0) {
       var h = d.heroes[0];
-      alert('英雄: ' + h.heroName + '\n称号: ' + h.title + '\n定位: ' + h.position + '\n类型: ' + h.heroType + '\n难度: ' + h.difficulty + '\n生存: ' + h.survivalAbility + ' 攻击: ' + h.attackAbility + ' 技能: ' + h.skillAbility + ' 辅助: ' + h.supportAbility);
+      alert('英雄: ' + h.heroName + '\n称号: ' + h.title + '\n定位: ' + h.position + '\n类型: ' + h.heroType + '\n难度: ' + h.difficulty + '\n生存: ' + h.survivalAbility + ' 攻击: ' + h.attackAbility + ' 技能' + h.skillAbility + ' 辅助: ' + h.supportAbility);
     }
   }).catch(function(){});
 }
@@ -285,193 +306,226 @@ document.addEventListener('click', function(e) {
   if (sw && sr && !sw.contains(e.target)) { sr.classList.remove('open'); }
 });
 function refreshDashboard() {
+  refreshGen++;
+  var gen = refreshGen;
   document.getElementById('timeoutNotice').style.display = 'none';
   var chartIds = ['chart-position','chart-type','chart-ability','chart-equip-price','chart-difficulty','chart-team-winrate'];
   chartIds.forEach(function(id) {
     var el = document.getElementById(id);
-    if (el) { el.innerHTML = '<div class="chart-loading">加载中...</div>'; }
+    if (el) { el.innerHTML = '<div class="chart-loading">加载中..</div>'; }
   });
-  document.getElementById('subtitle').textContent = '刷新中...';
+  document.getElementById('subtitle').textContent = '刷新中..';
   document.getElementById('statHeroes').textContent = '--';
   document.getElementById('statPositions').textContent = '--';
   document.getElementById('statEquipments').textContent = '--';
   document.getElementById('statTeams').textContent = '--';
-  initDashboard();
+  initDashboard(gen);
 }
-function initDashboard() {
+function initDashboard(gen) {
   // First check data availability
   fetchJSON('/api/data/summary').then(function(s) {
+    if (gen !== refreshGen) return;
     document.getElementById('statHeroes').textContent = s.heroCount;
     document.getElementById('statPositions').textContent = s.positionCount;
     document.getElementById('statEquipments').textContent = s.equipCount;
     document.getElementById('statTeams').textContent = s.teamCount;
-    document.getElementById('subtitle').textContent = s.heroCount + ' 位英雄 | ' + s.equipCount + ' 件装备 | ' + s.teamCount + ' 支战队';
+    document.getElementById('subtitle').textContent = s.heroCount + ' 位英雄 | ' + s.equipCount + ' 件装备 | ' + s.teamCount + ' 支战队 ';
     document.getElementById('timeoutNotice').style.display = 'none';
     dataLoaded = true;
-  }).catch(function() {});
-  Promise.all([
-    fetchJSON('/api/heroes/position-stats'),
-    fetchJSON('/api/equipments/price-by-type'),
-    fetchJSON('/api/teams/win-rates')
-  ]).then(function(r) {
-    var pos=r[0], equip=r[1], team=r[2];
-    dataLoaded = true;
-  }).catch(function() {
+  }).catch(function() { 
     document.getElementById('statHeroes').textContent='?';
     document.getElementById('statPositions').textContent='?';
     document.getElementById('statEquipments').textContent='?';
     document.getElementById('statTeams').textContent='?';
   });
-  fetchJSON('/api/heroes/position-stats').then(function(d) {
-    if (usingCanvasFallback) { drawCanvasPie('chart-position', d.categories, d.values); return; }
+
+
+  safeFetch("/api/heroes/position-stats", "chart-position", gen, function(d) {
+    if (usingCanvasFallback) { drawCanvasPie("chart-position", d.categories, d.values); return; }
     try {
-      var c = initChart('chart-position'); if (!c) throw 'no chart';
+      var c = initChart("chart-position"); if (!c) throw "no chart";
       c.setOption({
-        tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
-        legend: { orient: 'vertical', left: 'left', textStyle: { color: '#e0e6ed' } },
-        series: [{ type: 'pie', radius: ['35%','65%'], center: ['55%','50%'], label: { show: false },
+        tooltip: { trigger: "item", formatter: "{b}: {c} ({d}%)" },
+        legend: { orient: "vertical", left: "left", textStyle: { color: "#e0e6ed" } },
+        series: [{ type: "pie", radius: ["35%","65%"], center: ["55%","50%"], label: { show: false },
           data: d.categories.map(function(n,i){return{name:n,value:d.values[i],itemStyle:{color:COLORS[i%COLORS.length]}}}),
-          itemStyle: { borderColor: '#1a2a3a', borderWidth: 2 } }]
+          itemStyle: { borderColor: "#1a2a3a", borderWidth: 2 } }]
       });
-    } catch(e) { showError('chart-position', '渲染失败: ' + (e.message||e)); }
-  }).catch(function(e){showError('chart-position','加载失败: '+e.message);});
-  fetchJSON('/api/heroes/type-stats').then(function(d) {
-    if (usingCanvasFallback) { drawCanvasPie('chart-type', d.categories, d.values); return; }
+    } catch(e) { showError("chart-position", "渲染失败: " + (e.message||e)); }
+  });
+
+  safeFetch("/api/heroes/type-stats", "chart-type", gen, function(d) {
+    if (usingCanvasFallback) { drawCanvasPie("chart-type", d.categories, d.values); return; }
     try {
-      var c = initChart('chart-type'); if (!c) throw 'no chart';
+      var c = initChart("chart-type"); if (!c) throw "no chart";
       c.setOption({
-        tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
-        legend: { orient: 'vertical', left: 'left', textStyle: { color: '#e0e6ed' } },
-        series: [{ type: 'pie', radius: ['35%','65%'], center: ['55%','50%'], label: { show: false },
+        tooltip: { trigger: "item", formatter: "{b}: {c} ({d}%)" },
+        legend: { orient: "vertical", left: "left", textStyle: { color: "#e0e6ed" } },
+        series: [{ type: "pie", radius: ["35%","65%"], center: ["55%","50%"], label: { show: false },
           data: d.categories.map(function(n,i){return{name:n,value:d.values[i],itemStyle:{color:COLORS[i%COLORS.length]}}}),
-          itemStyle: { borderColor: '#1a2a3a', borderWidth: 2 } }]
+          itemStyle: { borderColor: "#1a2a3a", borderWidth: 2 } }]
       });
-    } catch(e) { showError('chart-type', '渲染失败: ' + (e.message||e)); }
-  }).catch(function(e){showError('chart-type','加载失败: '+e.message);});
-  fetchJSON('/api/heroes/ability-stats').then(function(d) {
+    } catch(e) { showError("chart-type", "渲染失败: " + (e.message||e)); }
+  });
+
+
+  safeFetch("/api/heroes/ability-stats", "chart-ability", gen, function(d) {
     if (usingCanvasFallback) {
-      drawCanvasRadar('chart-ability', [{name:'生存',max:10},{name:'攻击',max:10},{name:'技能',max:10},{name:'辅助',max:10}], d.seriesData);
+      drawCanvasRadar("chart-ability", [{name:"生存",max:10},{name:"攻击",max:10},{name:"技能",max:10},{name:"辅助",max:10}], d.seriesData);
       return;
     }
     try {
-      var c = initChart('chart-ability'); if (!c) throw 'no chart';
+      var c = initChart("chart-ability"); if (!c) throw "no chart";
       c.setOption({
-        title: { text: '各位置能力均衡图', left: 'center', textStyle: { color: '#c8a84e', fontSize: 14 } },
+        title: { text: "各位置能力均衡图", left: "center", textStyle: { color: "#c8a84e", fontSize: 14 } },
         tooltip: {
-          trigger: 'item',
+          trigger: "item",
           formatter: function(p) {
-            var html = '<strong>' + p.name + '</strong><br/>';
+            var html = "<strong>" + p.name + "</strong><br/>";
             var vals = p.value;
-            var names = ['生存','攻击','技能','辅助'];
+            var names = ["生存","攻击","技能","辅助"];
             for (var i = 0; i < vals.length; i++) {
               html += '<span style="display:inline-block;width:50px;color:#8899aa">' + names[i] + '</span> ' + '<span style="font-weight:bold;color:#c8a84e">' + vals[i] + '</span>/10<br/>';
             }
             return html;
           }
         },
-        legend: { data: d.positions, textStyle: { color: '#e0e6ed' }, selectedMode: 'multiple', bottom: 0, type: 'scroll' },
+        legend: { data: d.positions, textStyle: { color: "#e0e6ed" }, selectedMode: "multiple", bottom: 0, type: "scroll" },
         radar: {
-          indicator: [{name:'生存',max:10},{name:'攻击',max:10},{name:'技能',max:10},{name:'辅助',max:10}],
-          center: ['50%','42%'], radius: '62%',
-          name: { textStyle: { color: '#e0e6ed', fontSize: 13 } },
-          splitArea: { areaStyle: { color: ['rgba(200,168,78,0.02)','rgba(200,168,78,0.04)','rgba(200,168,78,0.06)'] } },
-          splitLine: { lineStyle: { color: '#2a3a4a' } },
-          axisLine: { lineStyle: { color: '#2a3a4a' } },
-          axisLabel: { color: '#8899aa', fontSize: 10 }
+          indicator: [{name:"生存",max:10},{name:"攻击",max:10},{name:"技能",max:10},{name:"辅助",max:10}],
+          center: ["50%","42%"], radius: "62%",
+          name: { textStyle: { color: "#e0e6ed", fontSize: 13 } },
+          splitArea: { areaStyle: { color: ["rgba(200,168,78,0.02)","rgba(200,168,78,0.04)","rgba(200,168,78,0.06)"] } },
+          splitLine: { lineStyle: { color: "#2a3a4a" } },
+          axisLine: { lineStyle: { color: "#2a3a4a" } },
+          axisLabel: { color: "#8899aa", fontSize: 10 }
         },
-        series: [{ type: 'radar', symbol: 'circle', symbolSize: 8,
-          label: {
-            show: true,
-            formatter: function(p) { return p.value.join('/'); },
-            color: '#e0e6ed',
-            fontSize: 10,
-            distance: 8
-          },
-          data: d.seriesData.map(function(d,i) {
-            return { value: d.value, name: d.name,
+        series: [{ type: "radar", symbol: "circle", symbolSize: 10,
+          data: d.seriesData.map(function(sd,i) {
+            return { value: sd.value, name: sd.name,
               areaStyle: { color: radarColors[i%radarColors.length], opacity: 0.18 },
               lineStyle: { color: radarColors[i%radarColors.length], width: 2.5 },
-              itemStyle: { color: radarColors[i%radarColors.length], borderColor: '#0f1923', borderWidth: 2 } };
+              itemStyle: { color: radarColors[i%radarColors.length], borderColor: "#0f1923", borderWidth: 2 } };
           })
         }]
       });
-    } catch(e) { showError('chart-ability', '渲染失败: ' + (e.message||e)); }
-  }).catch(function(e){showError('chart-ability','加载失败: '+e.message);});
-  fetchJSON('/api/equipments/price-by-type').then(function(d) {
-    if (usingCanvasFallback) { drawCanvasBar('chart-equip-price', d.categories, d.avgPrices.map(function(v){return Math.round(Number(v))})); return; }
+    } catch(e) { showError("chart-ability", "渲染失败: " + (e.message||e)); }
+  });
+
+
+  safeFetch("/api/equipments/price-by-type", "chart-equip-price", gen, function(d) {
+    if (usingCanvasFallback) { drawCanvasBar("chart-equip-price", d.categories, d.avgPrices.map(function(v){return Math.round(Number(v))})); return; }
     try {
-      var c = initChart('chart-equip-price'); if (!c) throw 'no chart';
+      var c = initChart("chart-equip-price"); if (!c) throw "no chart";
       c.setOption({
-        tooltip: { trigger: 'axis' },
-        legend: { textStyle: { color: '#e0e6ed' } },
-        xAxis: { type: 'category', data: d.categories, axisLabel: { color: '#8899aa', rotate: 15 } },
-        yAxis: { type: 'value', name: '金币', axisLabel: { color: '#8899aa' }, splitLine: { lineStyle: { color: '#2a3a4a', type: 'dashed' } } },
-        dataZoom: [{ type: 'slider', start: 0, end: 100, bottom: 0 }],
+        tooltip: { trigger: "axis" },
+        legend: { textStyle: { color: "#e0e6ed" } },
+        xAxis: { type: "category", data: d.categories, axisLabel: { color: "#8899aa", rotate: 15 } },
+        yAxis: { type: "value", name: "金币", axisLabel: { color: "#8899aa" }, splitLine: { lineStyle: { color: "#2a3a4a", type: "dashed" } } },
+        dataZoom: [{ type: "slider", start: 0, end: 100, bottom: 0 }],
         series: [
-          { name: '均价', type: 'bar', barWidth: '20%', data: d.avgPrices.map(function(v){return Math.round(Number(v))}), itemStyle: { color: '#c8a84e' } },
-          { name: '最高', type: 'bar', barWidth: '16%', barGap: '10%', data: d.maxPrices, itemStyle: { color: '#e8594e' } },
-          { name: '最低', type: 'bar', barWidth: '16%', data: d.minPrices, itemStyle: { color: '#5abf5a' } }
+          { name: "均价", type: "bar", barWidth: "20%", data: d.avgPrices.map(function(v){return Math.round(Number(v))}), itemStyle: { color: "#c8a84e" } },
+          { name: "最高", type: "bar", barWidth: "16%", barGap: "10%", data: d.maxPrices, itemStyle: { color: "#e8594e" } },
+          { name: "最低", type: "bar", barWidth: "16%", data: d.minPrices, itemStyle: { color: "#5abf5a" } }
         ]
       });
-    } catch(e) { showError('chart-equip-price', '渲染失败: ' + (e.message||e)); }
-  }).catch(function(e){showError('chart-equip-price','加载失败: '+e.message);});
-  fetchJSON('/api/heroes/difficulty-stats').then(function(d) {
-    var dcols = ['#5abf5a','#c8a84e','#e8594e'];
-    if (usingCanvasFallback) { drawCanvasBar('chart-difficulty', d.categories, d.values); return; }
+    } catch(e) { showError("chart-equip-price", "渲染失败: " + (e.message||e)); }
+  });
+
+
+  var dcols = ["#5abf5a","#c8a84e","#e8594e"];
+  safeFetch("/api/heroes/difficulty-stats", "chart-difficulty", gen, function(d) {
+    if (usingCanvasFallback) { drawCanvasBar("chart-difficulty", d.categories, d.values); return; }
     try {
-      var c = initChart('chart-difficulty'); if (!c) throw 'no chart';
+      var c = initChart("chart-difficulty"); if (!c) throw "no chart";
       c.setOption({
-        tooltip: { trigger: 'axis' },
-        xAxis: { type: 'category', data: d.categories, axisLabel: { color: '#8899aa' } },
-        yAxis: { type: 'value', name: '英雄数量', axisLabel: { color: '#8899aa' }, splitLine: { lineStyle: { color: '#2a3a4a', type: 'dashed' } } },
-        series: [{ type: 'bar', data: d.values.map(function(v,i){return{value:v,itemStyle:{color:dcols[i%dcols.length]}}}), barWidth: '40%', label: { show: true, position: 'top', color: '#e0e6ed', fontSize: 13 } }]
+        tooltip: { trigger: "axis" },
+        xAxis: { type: "category", data: d.categories, axisLabel: { color: "#8899aa" } },
+        yAxis: { type: "value", name: "英雄数量", axisLabel: { color: "#8899aa" }, splitLine: { lineStyle: { color: "#2a3a4a", type: "dashed" } } },
+        series: [{ type: "bar", data: d.values.map(function(v,i){return{value:v,itemStyle:{color:dcols[i%dcols.length]}}}), barWidth: "40%", label: { show: true, position: "top", color: "#e0e6ed", fontSize: 13 } }]
       });
-    } catch(e) { showError('chart-difficulty', '渲染失败: ' + (e.message||e)); }
-  }).catch(function(e){showError('chart-difficulty','加载失败: '+e.message);});
-  fetchJSON('/api/teams/win-rates').then(function(d) {
-    if (usingCanvasFallback) { drawCanvasBar('chart-team-winrate', d.names.slice().reverse(), d.winRates.slice().reverse()); return; }
+    } catch(e) { showError("chart-difficulty", "渲染失败: " + (e.message||e)); }
+  });
+
+
+  safeFetch("/api/teams/win-rates", "chart-team-winrate", gen, function(d) {
+    if (usingCanvasFallback) { drawCanvasBar("chart-team-winrate", d.names.slice().reverse(), d.winRates.slice().reverse()); return; }
     try {
-      var c = initChart('chart-team-winrate'); if (!c) throw 'no chart';
+      var c = initChart("chart-team-winrate"); if (!c) throw "no chart";
       var nm = d.names.slice().reverse(), rt = d.winRates.slice().reverse(), mt = d.totalMatches.slice().reverse();
       c.setOption({
-        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: function(p) { var i=p[0].dataIndex; return nm[i] + '<br/>胜率: ' + rt[i] + '%<br/>总场次: ' + mt[i]; } },
-        grid: { left: '3%', right: '6%', bottom: '3%', containLabel: true },
-        xAxis: { type: 'value', name: '胜率(%)', axisLabel: { color: '#8899aa' }, max: 100, splitLine: { lineStyle: { color: '#2a3a4a', type: 'dashed' } } },
-        yAxis: { type: 'category', data: nm, axisLabel: { color: '#e0e6ed', fontSize: 11 }, axisLine: { lineStyle: { color: '#2a3a4a' } } },
-        dataZoom: [{ type: 'slider', orient: 'vertical', start: 0, end: 100, right: 0 }],
-        series: [{ type: 'bar', data: rt, barWidth: '55%', label: { show: true, position: 'right', formatter: function(p){return p.value+'%'}, color: '#e0e6ed', fontSize: 10 }, itemStyle: { color: function(p) { var v=parseFloat(p.value); return v>=65?'#5abf5a':v>=50?'#c8a84e':'#e8594e'; } } }]
+        tooltip: { trigger: "axis", axisPointer: { type: "shadow" }, formatter: function(p) { var i=p[0].dataIndex; return nm[i] + "<br/>胜率: " + rt[i] + "%<br/>总场次: " + mt[i]; } },
+        grid: { left: "3%", right: "6%", bottom: "3%", containLabel: true },
+        xAxis: { type: "value", name: "胜率(%)", axisLabel: { color: "#8899aa" }, max: 100, splitLine: { lineStyle: { color: "#2a3a4a", type: "dashed" } } },
+        yAxis: { type: "category", data: nm, axisLabel: { color: "#e0e6ed", fontSize: 11 }, axisLine: { lineStyle: { color: "#2a3a4a" } } },
+        dataZoom: [{ type: "slider", orient: "vertical", start: 0, end: 100, right: 0 }],
+        series: [{ type: "bar", data: rt, barWidth: "55%", label: { show: true, position: "right", formatter: function(p){return p.value+"%"}, color: "#e0e6ed", fontSize: 10 }, itemStyle: { color: function(p) { var v=parseFloat(p.value); return v>=65?"#5abf5a":v>=50?"#c8a84e":"#e8594e"; } } }]
       });
-    } catch(e) { showError('chart-team-winrate', '渲染失败: ' + (e.message||e)); }
-  }).catch(function(e){showError('chart-team-winrate','加载失败: '+e.message);});
+    } catch(e) { showError("chart-team-winrate", "渲染失败: " + (e.message||e)); }
+  });
+
 }
+
+
 (function() {
   var urls = [
-    'https://unpkg.com/echarts@5.6.0/dist/echarts.min.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/echarts/5.6.0/echarts.min.js',
-    'https://cdn.bootcdn.net/ajax/libs/echarts/5.6.0/echarts.min.js',
-    'https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js',
-    'https://registry.npmmirror.com/echarts/5.6.0/files/dist/echarts.min.js'
+    "https://unpkg.com/echarts@5.6.0/dist/echarts.min.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/echarts/5.6.0/echarts.min.js",
+    "https://cdn.bootcdn.net/ajax/libs/echarts/5.6.0/echarts.min.js",
+    "https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js",
+    "https://registry.npmmirror.com/echarts/5.6.0/files/dist/echarts.min.js"
   ];
   var idx = 0;
+  var timer = null;
+  var resolved = false;
+
+  function onReady() {
+    if (resolved) return;
+    resolved = true;
+    if (timer) clearTimeout(timer);
+    if (typeof initDashboard === "function") {
+      initDashboard(window.refreshGen);
+    }
+  }
+
   function tryLoad() {
     if (idx >= urls.length) {
       usingCanvasFallback = true;
-      document.getElementById('echartsLoadError').style.display = 'block';
-      document.getElementById('version-info').textContent = '所有 CDN 源均失败，使用 Canvas 后备渲染。';
-      initDashboard();
+      document.getElementById("echartsLoadError").style.display = "block";
+      document.getElementById("version-info").textContent = "所有CDN源均失败，使用Canvas后备渲染";
+      onReady();
       return;
     }
-    var s = document.createElement('script');
+    var s = document.createElement("script");
     s.src = urls[idx];
     s.onload = function() {
-      document.getElementById('echartsLoadError').style.display = 'none';
-      initDashboard();
+      var errDiv = document.getElementById("echartsLoadError");
+      if (errDiv) errDiv.style.display = "none";
+      onReady();
     };
-    s.onerror = function() { idx++; tryLoad(); };
+    s.onerror = function() {
+      if (s.parentNode) s.parentNode.removeChild(s);
+      idx++;
+      tryLoad();
+    };
     document.head.appendChild(s);
   }
+
   tryLoad();
+
+  setTimeout(function() {
+    if (!resolved && typeof echarts === "undefined") {
+      usingCanvasFallback = true;
+      document.getElementById("echartsLoadError").style.display = "block";
+      document.getElementById("version-info").textContent = "CDN 加载超时，使用 Canvas 后备渲染";
+      onReady();
+    }
+  }, 10000);
 })();
+
+refreshDashboard();
+
+
 </script>
 </body>
 </html>

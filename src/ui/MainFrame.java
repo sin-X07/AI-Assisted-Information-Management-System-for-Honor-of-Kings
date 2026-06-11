@@ -35,6 +35,7 @@ public class MainFrame extends JFrame {
     private PlayerQueryPanel playerQueryPanel;
     private RankingPanel rankingPanel;
     private DataManagementPanel dataManagementPanel;
+    private MatchHistoryPanel matchHistoryPanel;
 
     private JButton heroBtn;
     private JButton equipBtn;
@@ -42,6 +43,7 @@ public class MainFrame extends JFrame {
     private JButton playerBtn;
     private JButton rankingBtn;
     private JButton dataMgmtBtn;
+    private JButton matchHistoryBtn;
     private JButton exportBtn;
     private JButton vizBtn;
 
@@ -128,6 +130,11 @@ public class MainFrame extends JFrame {
         rankingBtn.addActionListener(e -> showPanel("ranking"));
         sidebarContent.add(rankingBtn);
 
+        sidebarContent.add(Box.createVerticalStrut(4));
+        matchHistoryBtn = createNavButton("战绩查询", btnSize);
+        matchHistoryBtn.addActionListener(e -> showPanel("matchHistory"));
+        sidebarContent.add(matchHistoryBtn);
+
         sidebarContent.add(Box.createVerticalStrut(20));
         JSeparator sep1 = new JSeparator();
         sep1.setMaximumSize(new Dimension(160, 2));
@@ -192,6 +199,7 @@ public class MainFrame extends JFrame {
         playerQueryPanel = new PlayerQueryPanel(this);
         rankingPanel = new RankingPanel(this);
         dataManagementPanel = new DataManagementPanel(this);
+        matchHistoryPanel = new MatchHistoryPanel(this);
 
         contentPanel.add(welcomePanel, "welcome");
         contentPanel.add(heroPanel, "hero");
@@ -200,6 +208,7 @@ public class MainFrame extends JFrame {
         contentPanel.add(playerQueryPanel, "player");
         contentPanel.add(rankingPanel, "ranking");
         contentPanel.add(dataManagementPanel, "datamgmt");
+        contentPanel.add(matchHistoryPanel, "matchHistory");
 
         add(contentPanel, BorderLayout.CENTER);
         cardLayout.show(contentPanel, "welcome");
@@ -229,33 +238,44 @@ public class MainFrame extends JFrame {
             equipmentPanel.refreshData();
         } else if ("team".equals(name)) {
             teamPanel.refreshData();
+        } else if ("matchHistory".equals(name)) {
+            matchHistoryPanel.refreshData();
         }
         cardLayout.show(contentPanel, name);
     }
 
+
+    
+
     private void openVisualization() {
         if (vizServer != null) {
-            try {
-                Desktop.getDesktop().browse(new java.net.URI("http://localhost:" + vizServer.getPort()));
-            } catch (Exception e) {
-                log.error("Failed to open visualization browser", e);
-                JOptionPane.showMessageDialog(this,
-                        "可视化服务器已在端口 " + vizServer.getPort() + " 运行。\n请访问 http://localhost:" + vizServer.getPort(),
-                        "数据可视化", JOptionPane.INFORMATION_MESSAGE);
-            }
+            openBrowserOrShowUrl();
             return;
         }
 
-        // Start the visualization server
         try {
             vizServer = new VisualizationServer(dataManager);
             vizServer.start();
             log.info("Visualization server started successfully");
+            openBrowserOrShowUrl();
         } catch (IOException e) {
             log.error("Failed to start visualization server", e);
             JOptionPane.showMessageDialog(this,
                     "无法启动可视化服务器: " + e.getMessage(),
                     "错误", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void openBrowserOrShowUrl() {
+        if (vizServer == null) return;
+        String url = "http://localhost:" + vizServer.getPort();
+        try {
+            Desktop.getDesktop().browse(new java.net.URI(url));
+        } catch (Exception e) {
+            log.warn("Could not open browser automatically: {}", e.getMessage());
+            JOptionPane.showMessageDialog(this,
+                    "数据可视化服务器已启动\n\n请访问: " + url,
+                    "数据可视化", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 

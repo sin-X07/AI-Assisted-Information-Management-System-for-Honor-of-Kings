@@ -10,10 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import service.GameDataManager;
 
-import java.awt.*;
 import java.io.*;
 import java.net.InetSocketAddress;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -55,18 +53,10 @@ public class VisualizationServer {
         server.createContext("/api/data/summary", this::handleDataSummary);
         server.createContext("/static", this::handleStatic);
 
-        server.setExecutor(java.util.concurrent.Executors.newFixedThreadPool(2));
+        server.setExecutor(java.util.concurrent.Executors.newFixedThreadPool(8));
         server.start();
 
         log.info("Visualization server started at http://localhost:{}", port);
-
-        try {
-            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                Desktop.getDesktop().browse(new URI("http://localhost:" + port));
-            }
-        } catch (Exception e) {
-            log.warn("Could not open browser: {}", e.getMessage());
-        }
     }
 
     public void stop() {

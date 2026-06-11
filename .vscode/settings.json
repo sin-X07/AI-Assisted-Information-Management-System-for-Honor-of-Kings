@@ -1,3 +1,4 @@
 {
-    "search.searchOnTypeDebouncePeriod": 500
+    "search.searchOnTypeDebouncePeriod": 500,
+    "java.debug.settings.onBuildFailureProceed": true
 }
