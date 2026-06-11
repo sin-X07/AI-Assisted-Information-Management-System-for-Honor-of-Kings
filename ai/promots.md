@@ -440,3 +440,60 @@ Refresh buttons: Already present on all panels (HeroPanel, EquipmentPanel, TeamP
 ``` text
 实施计划
 ```
+
+## Prompt 14
+
+Time: 2026-06-10 20:56
+Tool/Model: Codex / DeepSeek V4 Flash
+Agent Role: Java Implementation
+Related Commit: 97a03eba1a5eff4b3f1ad612e1834ecb43c3723a
+
+### My Prompt 14
+
+``` text
+现在有几个bug需要你修复。1.GUI界面中的玩家查询界面不可用 
+2.web数据可视化仪表盘界面中各位值能力均衡图的交互功能有问题 
+3.web数据可视化仪表盘界面中装备价格统计与英雄难度分布之间有一行红色的字影响观感 
+4.web数据可视化仪表盘界面中的刷新数据功能无效，点击后数据无法显示 
+5.当前系统没有战绩查询功能，引入此功能并根据数据拟造出至少20条比赛记录，每条比赛记录要求可以查看详细对局信息，包括双方各5名玩家的英雄，装备（每个英雄最多装备6件），所属战队等相关级联信息
+```
+
+## AI Response Summary 14
+
+``` text
+Fix 4 bugs (GUI player query panel blank, radar chart tooltip not working, red error text between charts, refresh button stuck at loading), plus add a match history feature with 20+ fabricated game records displayed in a dedicated GUI panel.
+```
+
+### My Decision 14
+
+``` text
+实施计划
+```
+
+## Prompt 15
+
+Time: 2026-06-11 10:23
+Tool/Model: Codex / DeepSeek V4 Pro
+Agent Role: Java Review
+Related Commit: 97a03eba1a5eff4b3f1ad612e1834ecb43c3723a
+
+### My Prompt 15
+
+``` text
+帮我检查bug，web数据可视化页面里的数据加载不出来，一直显示加载中
+```
+
+## AI Response Summary 15
+
+``` text
+删除整个第一份 HTML 文档（原第 1-518 行）——去掉破碎的 initDashboard 和所有重复的 JS/CSS/HTML
+删除重复的 fetchJSON("/api/data/summary") 调用——同一份 summary 数据被请求了两次
+修复损坏的 </p> 标签——两处 /p> 少写了 <
+补全缺失的关闭标签——原文件没有 </script>、</body>、</html>
+```
+
+### My Decision 15
+
+``` text
+实施计划
+```

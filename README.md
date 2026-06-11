@@ -51,18 +51,20 @@ src/
 │   ├── AppLauncher.java                    # GUI 入口
 │   ├── LoginDialog.java                    # 登录对话框
 │   ├── MainFrame.java                      # 主窗口（BorderLayout + CardLayout 侧边栏）
-│   ├── panels/                             # 7 个面板
+│   ├── panels/                             # 8 个面板
 │   │   ├── WelcomePanel.java               # 欢迎 + 数据总览
 │   │   ├── HeroPanel.java                  # 英雄列表（JTable + 搜索）
 │   │   ├── EquipmentPanel.java             # 装备列表
 │   │   ├── TeamPanel.java                  # 战队列表
 │   │   ├── PlayerQueryPanel.java           # 玩家级联查询
 │   │   ├── RankingPanel.java               # 排行榜
+│   │   ├── MatchHistoryPanel.java          # 比赛历史查询
 │   │   └── DataManagementPanel.java        # 数据管理（CRUD）
-│   ├── dialogs/                            # 6 个编辑/详情对话框
+│   ├── dialogs/                            # 7 个编辑/详情对话框
 │   │   ├── HeroDetailDialog / HeroEditDialog
 │   │   ├── EquipmentDetailDialog / EquipmentEditDialog
-│   │   └── TeamDetailDialog / TeamEditDialog
+│   │   ├── TeamDetailDialog / TeamEditDialog
+│   │   └── MatchDetailDialog
 │   └── web/                                # Web 可视化层
 │       ├── VisualizationServer.java        # JDK HttpServer + ECharts API
 │       └── static/dashboard.html           # ECharts 仪表盘页面
@@ -166,13 +168,14 @@ java -cp out Main
 | 战队管理 | TeamPanel | JTable 显示战队列表，含胜率/队长/荣誉 |
 | 玩家查询 | PlayerQueryPanel | 输入玩家名，四级级联展示：玩家→战队→英雄→装备 |
 | 排行榜 | RankingPanel | JTable 显示动态胜率排序 |
+| 比赛历史 | MatchHistoryPanel | 按玩家/战队查询比赛记录，展示胜负分布 |
 | 数据管理 *(admin only)* | DataManagementPanel | 英雄/装备/战队的表单 CRUD 操作 |
 | 导出排行榜 *(admin only)* | — | 将排行榜导出为 tab 分隔的 UTF-8 文件 |
 | 数据可视化 *(admin only)* | VisualizationServer | 启动嵌入式 HttpServer + ECharts 仪表盘 |
 
 ### Web 可视化仪表盘
 
-启动后浏览器打开 `http://localhost:{port}`，展示 5 个 ECharts 图表：
+启动后浏览器打开 `http://localhost:{port}`，展示 6 个 ECharts 图表：
 
 | 图表 | 数据类型 | API 端点 |
 |------|----------|----------|
@@ -312,6 +315,7 @@ java -cp out Main
 | player 预设账号 | 不在任何战队成员列表中 |
 | SQLite 无显式事务 | 批量操作未使用事务控制 |
 | Web 无安全认证 | 可视化服务器未做 HTTPS 或认证 |
+| Dashboard HTML 修复 | v2.0.0 初始版本存在 HTML 文档重复拼接与 initDashboard 嵌套 bug（已修复于 2026-06-11） |
 | 模糊搜索性能 | Levenshtein 距离 O(n²) 在 90 英雄场景可接受，更大数据集需优化 |
 | GUI 多语言 | 仅中文界面，无国际化支持 |
 | 单线程 | GUI 事件线程 + Web 服务器双线程池，无复杂并发 |
