@@ -1,0 +1,12 @@
+# 排除 Java 源码和构建产物（Vercel 仅部署 public/ 静态资源）
+src/
+target/
+logs/
+*.db
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+pom.xml
+*.java
